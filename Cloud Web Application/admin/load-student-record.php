@@ -5,7 +5,7 @@
     <td class="sortable">Email</td>
     <td>Address</td>
     <td>City</td>
-    <td>State</td>
+    <td class="sortable">State</td>
     <td class="sortable">Contact</td>
     <td>Action</td>
 </tr>
@@ -13,10 +13,6 @@
 <?php
 require_once '../_base.php';
 // get parameter
-
-if (isset($_POST['status']) && $_POST['status'] != '') {
-    $status = $_POST['status'];
-}
 
 if (isset($_POST['keyword']) && $_POST['keyword'] != '') {
     $keyword = $_POST['keyword'];
@@ -31,7 +27,7 @@ if (isset($_POST['sortOrder']) && $_POST['sortOrder'] != '') {
 }
 
 // get record list
-$sql = "SELECT * FROM student " . (isset($keyword) ? " WHERE (studName LIKE '%$keyword%' OR studEmail  LIKE '%$keyword%' OR studPhone  LIKE '%$keyword%') " : '') . " ORDER BY ".(isset($sortBy) ? " $sortBy ". (isset($sortOrder) ? "$sortOrder" : 'ASC') : 'studid');
+$sql = "SELECT * FROM student " . (isset($keyword) ? " WHERE (studName LIKE '%$keyword%' OR studEmail LIKE '%$keyword%' OR studAddress LIKE '%$keyword%' OR studCity LIKE '%$keyword%' OR studState LIKE '%$keyword%' OR studPhone LIKE '%$keyword%') " : '') . " ORDER BY ".(isset($sortBy) ? " $sortBy ". (isset($sortOrder) ? "$sortOrder" : 'ASC') : 'studid');
 
 $studList = $_db->query($sql);
 $i = 1;
@@ -59,7 +55,7 @@ if ($studList->rowCount() > 0):
         </tr>
     <?php endforeach;
 else: ?>
-    <!-- no staff record found -->
+    <!-- no student record found -->
     <tr>
         <td colspan="8" class="text-center"> No Record Found </td>
     </tr>

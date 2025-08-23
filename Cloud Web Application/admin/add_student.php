@@ -9,45 +9,59 @@ if (isset($_POST['cancel'])) {
 }
 
 $_err = [];
-// file upload
-if (isset($_FILES['upic'])) {
-    $file = $_FILES['upic'];
-    $_err["upic"] = checkUploadPic($file);
-
-    // no error
-    if (empty($_err["upic"])) {
-        //everything okey, save the file
-        //create a unique id and use it as file name
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $newFileName = isset($_FILES["upic"]) && !empty($_FILES["upic"] && !empty($ext)) ? uniqid() . '.' . $ext : null;
-
-        //save the file
-        move_uploaded_file($file['tmp_name'], '../profilePic/' . $newFileName);
-    } else {
-        $newFileName = null;
-    }
-}
 
 
 if (is_post()) {
-    $uname = post("uname") ?? "";
-    $uemail = post("uemail") ?? "";
-    $umobile = post("umobile") ?? "";
+    // get data filled in the form
+    $sname = post("sname") ?? "";
+    $semail = post("semail") ?? "";
+    $sphone = post("sphone") ?? "";
+    $saddress = post("saddress") ?? "";
+    $scity = post("scity") ?? "";
+    $sstate = post("sstate") ?? "";
 
-    $_err["uname"] = checkUsername($uname) ?? '';
-    $_err["uemail"] = checkRegisterEmail($uemail) ?? '';
-    $_err["umobile"] = checkRegisterContact($umobile) ?? '';
+    // validate data
+    $_err["sname"] = checkUsername($sname) ?? '';
+    $_err["semail"] = checkRegisterEmail($semail) ?? '';
+    $_err["sphone"] = checkRegisterContact($sphone) ?? '';
+    $_err["saddress"] = checkAddress($saddress) ?? '';
+    $_err["scity"] = checkCity($scity) ?? '';
+    $_err["sstate"] = checkState($sstate) ?? '';
+
+    // file upload
+    if (isset($_FILES['spic'])) {
+        $file = $_FILES['spic'];
+        $_err["spic"] = checkUploadPic($file);
+
+        // no error
+        if (empty($_err["spic"])) {
+            // everything okay, save the file
+            // create a unique id and use it as file name
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $newFileName = isset($_FILES["spic"]) && !empty($_FILES["spic"] && !empty($ext)) ? uniqid() . '.' . $ext : null;
+        } else {
+            $newFileName = null;
+        }
+    }
 
     $_err = array_filter($_err);
 
-    // store new user record
+    // no error then store new student record
     if (empty($_err)) {
-        // generate random password 
-        $pass = generate_password();
+        $stmt = $_db->prepare("INSERT INTO student (studName, studPic, studEmail, studPhone, studAddress, studCity, studState) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$sname, $newFileName, $semail, $sphone, $saddress, $scity, $sstate]);
 
-        $stmt = $_db->prepare("INSERT INTO user (uname, pass, email, contact, proPic, remark) VALUES (?, SHA1(?), ?, ?, ?, ?)");
-        $stmt->execute([$uname, $pass, $uemail, $umobile, $newFileName, $pass]);
-        if ($stmt->rowCount() == 0) {
+        if ($stmt->rowCount() > 0) {
+            // success
+            // save the profile image file
+            if ($newFileName !== null) {
+                move_uploaded_file($file['tmp_name'], '../profilePic/' . $newFileName);
+            }
+            
+            alert_msg('New student record added successfully!', 'student_list.php');
+            exit(); 
+        } else {
+            // fail
             $_err[] = "Unable to insert. Please try again.";
         }
     }
@@ -78,29 +92,46 @@ if (is_post()) {
         <div class="main-content">
             <form id="reg" method="post" action="" name="reg" enctype="multipart/form-data">
 
+
                 <div class="input-field">
-                    <label for="uname" class="required">Username</label>
-                    <?= html_text('uname', "placeholder='Enter Username' required") ?>
-                    <?= err("uname") ?>
+                    <label for="sname" class="required">Full Name</label>
+                    <?= html_text('sname', "placeholder='Enter Full Name' required") ?>
+                    <?= err("sname") ?>
                 </div>
                 <div class="input-field">
-                    <label for="uemail" class="required">Email address</label>
-                    <?= html_text('uemail', "placeholder='Enter Email (e.g. xxxx@xxx.xxx)' required") ?>
-                    <?= err("uemail") ?>
+                    <label for="semail" class="required">Email Address</label>
+                    <?= html_text('semail', "placeholder='Enter Email (e.g. xxxx@xxx.xxx)' required") ?>
+                    <?= err("semail") ?>
                 </div>
                 <div class="input-field">
-                    <label for="mobile" class="required">Mobile</label>
-                    <?= html_text('umobile', "placeholder='Enter Mobile Number (e.g. 0123456789)' required") ?>
-                    <?= err("umobile") ?>
+                    <label for="sphone" class="required">Mobile</label>
+                    <?= html_text('sphone', "placeholder='Enter Mobile Number (e.g. 0123456789)' required") ?>
+                    <?= err("sphone") ?>
                 </div>
+                <div class="input-field">
+                    <label for="saddress" class="required">Address</label>
+                    <?= html_text('saddress', "placeholder='Enter Address' required") ?>
+                    <?= err("saddress") ?>
+                </div>
+                <div class="input-field">
+                    <label for="scity" class="required">City</label>
+                    <?= html_text('scity', "placeholder='Enter City' required") ?>
+                    <?= err("scity") ?>
+                </div>
+                <div class="input-field">
+                    <label for="sstate" class="required">State</label>
+                    <?= html_text('sstate', "placeholder='Enter State' required") ?>
+                    <?= err("sstate") ?>
+                </div>
+
                 <!-- upload profile pic -->
                 <div class="input-field">
-                    <label for="upic">Profile Picture</label>
+                    <label for="spic">Profile Picture</label>
                     <div class="custom-file-button">
-                        <?= html_file('upic', 'image/*') ?>
-                        <label for="upic">Upload Image ... </label>
+                        <?= html_file('spic', 'image/*') ?>
+                        <label for="spic">Upload Image ... </label>
                     </div>
-                    <?= err('upic') ?>
+                    <?= err('spic') ?>
                     <!-- photo preview -->
                     <label id="upload-preview" tabindex="0">
                         <img src="../profilePic/profile.png">

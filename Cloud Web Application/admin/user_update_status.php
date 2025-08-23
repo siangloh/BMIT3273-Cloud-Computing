@@ -17,8 +17,8 @@ if (is_post()) {
         $action = 'deleted';
 
         foreach ($ids as $id) {
-            $stm = $_db->prepare("UPDATE user SET status = ? WHERE uid = ? AND status != ?");
-            $stm->execute([$updateValue, $id, $updateValue]);
+            $stm = $_db->prepare("DELETE FROM student WHERE studid = ?");
+            $stm->execute([$id]);
             if ($stm->rowCount() > 0) {
                 $num++;
             }
