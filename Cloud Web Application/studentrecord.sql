@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 23, 2025 at 12:00 PM
+-- Generation Time: Aug 23, 2025 at 03:31 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,21 @@ SET time_zone = "+00:00";
 --
 -- Database: `studentrecord`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `set_student_auto_increment` ()   BEGIN
+    DECLARE next_id INT;
+    SELECT IFNULL(MAX(studid), 0) + 1 INTO next_id FROM student;
+    SET @sql = CONCAT('ALTER TABLE student AUTO_INCREMENT = ', next_id);
+    PREPARE stmt FROM @sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -43,27 +58,28 @@ CREATE TABLE `student` (
 --
 
 INSERT INTO `student` (`studid`, `studName`, `studPic`, `studEmail`, `studPhone`, `studAddress`, `studCity`, `studState`) VALUES
-(1, 'Alex Lim Chiang Shing', NULL, 'alexLim@email.com', '0123456789', '12 Jalan Melati 1, Taman Melati', 'Kuala Lumpur', 'Wilayah Persekutuan'),
-(2, 'Christine Ooi Yan Ming', NULL, 'christineOoi@email.com', '0134567890', '45 Jalan Kenanga, Taman Sri Hartamas', 'Petaling Jaya', 'Selangor'),
-(3, 'Tan Wei Ming', NULL, 'weiMing@email.com', '01123456789', '78 Jalan Bunga Raya, Taman Bunga Raya', 'Johor Bahru', 'Johor'),
-(4, 'Elestine Teoh Ching Yan', NULL, 'elestine233@email.com', '0178901234', '23 Lorong Mawar 2, Taman Mawar', 'George Town', 'Pulau Pinang'),
-(5, 'Lim Chee Wei', NULL, 'cheewei125@email.com', '0191234567', '56 Jalan Angsana, Taman Angsana Jaya', 'Ipoh', 'Perak'),
-(6, 'Lee Jia Hao', NULL, 'jiahao568@email.com', '0145678901', '89 Jalan Cempaka, Taman Cempaka Indah', 'Kota Kinabalu', 'Sabah'),
-(7, 'Teo Boon Keat', NULL, 'boonkeat298@email.com', '0167890123', '101 Jalan Teratai, Taman Teratai', 'Kuching', 'Sarawak'),
-(8, 'Chan Xin Yi', NULL, 'xinyi896@email.com', '0189012345', '34 Jalan Dahlia, Taman Dahlia', 'Shah Alam', 'Selangor'),
-(9, 'Lau Wei Ming', NULL, 'weiming2rr@email.com', '0120987654', '67 Jalan Orkid, Taman Orkid Jaya', 'Malacca City', 'Melaka'),
-(10, 'Goh Hui Shan', NULL, 'huishan@email.com', '0132109876', '90 Jalan Seroja, Taman Seroja Baru', 'Kuantan', 'Pahang'),
-(11, 'Ho Kah Wei', NULL, 'kahwei@email.com', '01198765432', '15 Jalan Kemuning, Taman Kemuning', 'Seri Kembangan', 'Selangor'),
-(12, 'Yap Xin Rou', NULL, 'xinrou@email.com', '0176543210', '28 Lorong Anggerik, Taman Anggerik Jaya', 'Alor Setar', 'Kedah'),
-(13, 'Chew Jun Hao', NULL, 'junhao@email.com', '0198765432', '51 Jalan Kemboja, Taman Kemboja', 'Kangar', 'Perlis'),
-(14, 'Ong Pei Ling', NULL, 'peiling@email.com', '0143210987', '84 Jalan Bunga Tanjung, Taman Bunga Tanjung', 'Kota Bharu', 'Kelantan'),
-(15, 'Low Wei Shen', NULL, 'weishen@email.com', '0165432109', '17 Jalan Keladi, Taman Keladi Indah', 'Kuala Terengganu', 'Terengganu'),
-(16, 'Tee Siew Mei', NULL, 'siewmei@email.com', '0187654321', '40 Jalan Meranti, Taman Meranti Jaya', 'Batu Pahat', 'Johor'),
-(17, 'Khoo Boon Seng', NULL, 'boonseng@email.com', '0121098765', '63 Jalan Kembang, Taman Kembang Baru', 'Sibu', 'Sarawak'),
-(18, 'Chin Hui Ting', NULL, 'huiting@email.com', '0138765432', '96 Jalan Cendana, Taman Cendana', 'Miri', 'Sarawak'),
-(19, 'Liew Jia Wei', NULL, 'jiawei@email.com', '0174321098', '29 Jalan Kasturi, Taman Kasturi', 'Seremban', 'Negeri Sembilan'),
-(20, 'Soo Xin Jie', 'profilepic1.png', 'xinjie@email.com', '01154321098', '72 Jalan Akasia, Taman Akasia Jaya', 'Sandakan', 'Sabah'),
-(21, 'Soo Xing Xing', '68a98ce549947.jpg', 'xinjie@email.com', '01154321098', '72 Jalan Akasia, Taman Akasia Jaya', 'Sandakan', 'Sabah');
+(1, 'Soo Xin Yun', '68a99648b47ee.jpg', 'xinyun@email.com', '0123456788', '72 Jalan Akasia, Taman Akasia Jaya', 'Sandakan', 'Sabah'),
+(2, 'Alex Lim Chiang Shing', NULL, 'alexLim@email.com', '0123456789', '12 Jalan Melati 1, Taman Melati', 'Kuala Lumpur', 'Wilayah Persekutuan'),
+(3, 'Christine Ooi Yan Ming', NULL, 'christineOoi@email.com', '0134567890', '45 Jalan Kenanga, Taman Sri Hartamas', 'Petaling Jaya', 'Selangor'),
+(4, 'Tan Wei Ming', NULL, 'weiMing@email.com', '01123456789', '78 Jalan Bunga Raya, Taman Bunga Raya', 'Johor Bahru', 'Johor'),
+(5, 'Elestine Teoh Ching Yan', NULL, 'elestine233@email.com', '0178901234', '23 Lorong Mawar 2, Taman Mawar', 'George Town', 'Pulau Pinang'),
+(6, 'Lim Chee Wei', NULL, 'cheewei125@email.com', '0191234567', '56 Jalan Angsana, Taman Angsana Jaya', 'Ipoh', 'Perak'),
+(7, 'Lee Jia Hao', NULL, 'jiahao568@email.com', '0145678901', '89 Jalan Cempaka, Taman Cempaka Indah', 'Kota Kinabalu', 'Sabah'),
+(8, 'Teo Boon Keat', NULL, 'boonkeat298@email.com', '0167890123', '101 Jalan Teratai, Taman Teratai', 'Kuching', 'Sarawak'),
+(9, 'Chan Xin Yi', NULL, 'xinyi896@email.com', '0189012345', '34 Jalan Dahlia, Taman Dahlia', 'Shah Alam', 'Selangor'),
+(10, 'Lau Wei Ming', NULL, 'weiming2rr@email.com', '0120987654', '67 Jalan Orkid, Taman Orkid Jaya', 'Malacca City', 'Melaka'),
+(11, 'Goh Hui Shan', NULL, 'huishan@email.com', '0132109876', '90 Jalan Seroja, Taman Seroja Baru', 'Kuantan', 'Pahang'),
+(12, 'Ho Kah Wei', NULL, 'kahwei@email.com', '01198765432', '15 Jalan Kemuning, Taman Kemuning', 'Seri Kembangan', 'Selangor'),
+(13, 'Yap Xin Rou', NULL, 'xinrou@email.com', '0176543210', '28 Lorong Anggerik, Taman Anggerik Jaya', 'Alor Setar', 'Kedah'),
+(14, 'Chew Jun Hao', NULL, 'junhao@email.com', '0198765432', '51 Jalan Kemboja, Taman Kemboja', 'Kangar', 'Perlis'),
+(15, 'Ong Pei Ling', NULL, 'peiling@email.com', '0143210987', '84 Jalan Bunga Tanjung, Taman Bunga Tanjung', 'Kota Bharu', 'Kelantan'),
+(16, 'Low Wei Shen', NULL, 'weishen@email.com', '0165432109', '17 Jalan Keladi, Taman Keladi Indah', 'Kuala Terengganu', 'Terengganu'),
+(17, 'Tee Siew Mei', NULL, 'siewmei@email.com', '0187654321', '40 Jalan Meranti, Taman Meranti Jaya', 'Batu Pahat', 'Johor'),
+(18, 'Khoo Boon Seng', NULL, 'boonseng@email.com', '0121098765', '63 Jalan Kembang, Taman Kembang Baru', 'Sibu', 'Sarawak'),
+(19, 'Chin Hui Ting', NULL, 'huiting@email.com', '0138765432', '96 Jalan Cendana, Taman Cendana', 'Miri', 'Sarawak'),
+(20, 'Liew Jia Wei', NULL, 'jiawei@email.com', '0174321098', '29 Jalan Kasturi, Taman Kasturi', 'Seremban', 'Negeri Sembilan'),
+(21, 'Soo Xin Jie', 'profilepic1.png', 'xinjie@email.com', '01154321098', '72 Jalan Akasia, Taman Akasia Jaya', 'Sandakan', 'Sabah'),
+(22, 'Hello DEF', NULL, 'abcd@gmail.com', '01234567891', '5245343434345543 abcde', 'abcdefg', 'abcdefge');
 
 -- --------------------------------------------------------
 
@@ -119,6 +135,12 @@ ALTER TABLE `user`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `student`
+--
+ALTER TABLE `student`
+  MODIFY `studid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `user`
