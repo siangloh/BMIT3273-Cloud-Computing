@@ -281,7 +281,7 @@ div:has(>.switch){
 /* search bar style */
 div.search-bar{
     display: flex;
-    width: 30%;
+    width: 40%;
     background-color: white;
     padding: 5px;
     justify-content: space-between;
