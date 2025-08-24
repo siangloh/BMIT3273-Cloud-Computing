@@ -5,7 +5,7 @@
     <td class="sortable">Email</td>
     <td>Address</td>
     <td>City</td>
-    <td>State</td>
+    <td class="sortable">State</td>
     <td class="sortable">Contact</td>
     <td>Action</td>
 </tr>
@@ -13,10 +13,6 @@
 <?php
 require_once '../_base.php';
 // get parameter
-
-if (isset($_POST['status']) && $_POST['status'] != '') {
-    $status = $_POST['status'];
-}
 
 if (isset($_POST['keyword']) && $_POST['keyword'] != '') {
     $keyword = $_POST['keyword'];
@@ -31,35 +27,35 @@ if (isset($_POST['sortOrder']) && $_POST['sortOrder'] != '') {
 }
 
 // get record list
-$sql = "SELECT * FROM user WHERE superadmin != 1 AND status != 0" . (isset($status) ? " AND status = '$status'" : '') . (isset($keyword) ? " AND (uname LIKE '%$keyword%' OR email  LIKE '%$keyword%' OR contact  LIKE '%$keyword%') " : '') . " ORDER BY ".(isset($sortBy) ? " $sortBy ". (isset($sortOrder) ? "$sortOrder" : 'ASC') : 'uid');
+$sql = "SELECT * FROM student " . (isset($keyword) ? " WHERE (studName LIKE '%$keyword%' OR studEmail LIKE '%$keyword%' OR studAddress LIKE '%$keyword%' OR studCity LIKE '%$keyword%' OR studState LIKE '%$keyword%' OR studPhone LIKE '%$keyword%') " : '') . " ORDER BY ".(isset($sortBy) ? " $sortBy ". (isset($sortOrder) ? "$sortOrder" : 'ASC') : 'studid');
 
-$userList = $_db->query($sql);
+$studList = $_db->query($sql);
 $i = 1;
 
-if ($userList->rowCount() > 0):
-    foreach ($userList as $u):
-        $checkboxItem = $u->uid;
+if ($studList->rowCount() > 0):
+    foreach ($studList as $s):
+        $checkboxItem = $s->studid;
 ?>
         <tr>
             <td class="select-item w-5 text-center">
                 <?= html_checkbox_group('checkboxItem', '', "form='f' class='checkboxes'") ?>
             </td>
             <td class="w-10"><?= $i++ ?></td>
-            <td><?= $u->uname ?></td>
-            <td><?= $u->email ?></td>
-            <td><?= $u->address ?></td>
-            <td><?= $u->city ?></td>
-            <td><?= $u->state ?></td>
-            <td><?= $u->contact ?></td>
+            <td><?= $s->studName ?></td>
+            <td><?= $s->studEmail ?></td>
+            <td><?= $s->studAddress ?></td>
+            <td><?= $s->studCity ?></td>
+            <td><?= $s->studState ?></td>
+            <td><?= $s->studPhone ?></td>
             <td>
                 <div class="ind-action-btn w-100">
-                    <button class="blue-btn" data-get="edit_student.php?id=<?= $u->uid ?>" style='width:100%'>Edit</button>
+                    <button class="blue-btn" data-get="edit_student.php?id=<?= $s->studid ?>" style='width:100%'>Edit</button>
                 </div>
             </td>
         </tr>
     <?php endforeach;
 else: ?>
-    <!-- no staff record found -->
+    <!-- no student record found -->
     <tr>
         <td colspan="8" class="text-center"> No Record Found </td>
     </tr>

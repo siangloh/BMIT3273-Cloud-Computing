@@ -37,7 +37,7 @@ if (is_post()) {
         $stmt = $_db->prepare("UPDATE user SET uname = ?, email = ?, contact = ?, proPic = ? WHERE uid = ?");
         $stmt->execute([$uname, $uemail, $umobile, $newFileName, $_adminID]);
         if ($stmt->rowCount() < 1) {
-            alert_msg("No changes made.");
+            sweet_alert_msg("No changes made.", 'info', null, false);
         } else {
             //save the file
             if ($newFileName != $me->proPic) {
@@ -46,7 +46,7 @@ if (is_post()) {
                 if ($me->proPic != null)
                     unlink("../profilePic/$me->proPic");
             }
-            alert_msg('Record update successful');
+            sweet_alert_msg('Record update successful', 'success', null, false);
         }
     }
 }
@@ -63,15 +63,24 @@ $superadmin = $admin->superadmin;
 <head>
     <link href="../css/profile.css" rel="stylesheet" type="text/css" />
     <style>
-        input[type="submit"]{
+        input[type="submit"] {
             background: #373737;
         }
 
-        .input-field{
+        .input-field {
             flex-direction: row;
         }
+
+        /* .edit-area.active #upload-preview:hover>span {
+            opacity: 1;
+        }
+
+        .edit-area.disabled-edit #upload-preview {
+            pointer-events: none;
+        } */
     </style>
 </head>
+
 
 <div class="profile-box">
     <!-- <div class="profile-nav">
@@ -114,9 +123,11 @@ $superadmin = $admin->superadmin;
                             <label class="photo" for="upic" id="upload-preview" tabindex="0">
                                 <?= html_file('upic', 'image/*', 'hidden') ?>
                                 <img src="../profilePic/<?= $upic ?? 'profile.png' ?>">
-                                <span><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 8l-5-5-5 5M12 4.2v10.3" />
-                                    </svg></span>
+                                    </svg>
+                                </span>
                             </label>
                         </div>
                         <?= err('upic') ?>
@@ -151,5 +162,16 @@ $superadmin = $admin->superadmin;
         </div>
     </div>
 </div>
+
+<!-- <script>
+    $('#enable-edit').click(function() {
+        e = $('.disabled-edit:has(+ #enable-edit)')[0];
+        $('.disabled-edit input').prop("disabled", false);
+        $('.disabled-edit .show-edit').prop("hidden", false);
+        $(".hide-edit").prop("hidden", true);
+        $(e).removeClass("disabled-edit");
+        $(e).addClass("active");
+    });
+</script> -->
 
 <?php include "admin_footer.php" ?>

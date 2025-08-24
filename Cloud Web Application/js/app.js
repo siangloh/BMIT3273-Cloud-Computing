@@ -25,9 +25,9 @@ $(() => {
     });
 
     // Initiate GET request
-    $('[data-get]').on('click', e => {
+    $(document).on('click', '[data-get]', e => {
         e.preventDefault();
-        const url = e.target.dataset.get;
+        const url = e.currentTarget.dataset.get;
         location = url || location;
     });
 
@@ -143,6 +143,7 @@ $(() => {
         $('.disabled-edit .show-edit').prop("hidden", false);
         $(".hide-edit").prop("hidden", true);
         $(e).removeClass("disabled-edit");
+        $(e).addClass("active");
     });
 
     $("#close-modal").click(function () {
@@ -181,10 +182,10 @@ function reloadJS() {
     $("head").append("<script type='text/javascript' src='../js/app.js'>");
 }
 
-$.urlParam = function(name){
+$.urlParam = function (name) {
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-    if (results==null) {
-       return null;
+    if (results == null) {
+        return null;
     }
     return decodeURI(results[1]) || 0;
 }

@@ -7,7 +7,7 @@ if (is_post()) {
     if (!is_array($ids)) $ids = [$ids];
 
     if (sizeof($ids) < 1) {
-        alert_msg("No item selected. ", 'student_list.php');
+        sweet_alert_msg("No item selected. ", 'error', 'student_list.php', false);
     }
 
     $num = 0;
@@ -17,19 +17,19 @@ if (is_post()) {
         $action = 'deleted';
 
         foreach ($ids as $id) {
-            $stm = $_db->prepare("UPDATE user SET status = ? WHERE uid = ? AND status != ?");
-            $stm->execute([$updateValue, $id, $updateValue]);
+            $stm = $_db->prepare("DELETE FROM student WHERE studid = ?");
+            $stm->execute([$id]);
             if ($stm->rowCount() > 0) {
                 $num++;
             }
         }
     } else {
-        alert_msg('Invalid action.', $_SERVER['HTTP_REFERER']);
+        sweet_alert_msg('Invalid action.', 'error', $_SERVER['HTTP_REFERER'], false);
     }
     
     if ($num > 0) {
-        alert_msg("$num record(s) has been $action. ", $_SERVER['HTTP_REFERER']);
+        sweet_alert_msg("$num record(s) has been $action. ", 'success', $_SERVER['HTTP_REFERER'], false);
     } else {
-        alert_msg("No changes made. ", $_SERVER['HTTP_REFERER']);
+        sweet_alert_msg("No changes made. ", 'info', $_SERVER['HTTP_REFERER'], false);
     }
 }

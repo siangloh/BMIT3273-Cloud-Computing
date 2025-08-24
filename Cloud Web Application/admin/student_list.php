@@ -25,13 +25,15 @@ include 'admin_header.php';
         });
 
         var Timeout; //For reference to timeout
-        var DelayInMs = 500;
-        //When input is received, (re)set the timer
+        var DelayInMs = 800;
+        // When input is received, (re)set the timer
         $("#search").keydown(function() {
             if (Timeout) {
                 clearTimeout(Timeout);
-            } //Clear existing timeout, if any
-            Timeout = setTimeout(function() { getRecord(); }, DelayInMs);
+            } // Clear existing timeout, if any
+            Timeout = setTimeout(function() {
+                getRecord();
+            }, DelayInMs);
         });
     });
 
@@ -40,7 +42,6 @@ include 'admin_header.php';
             type: "POST",
             url: "load-student-record.php",
             data: {
-                status: $('#select-status').find(":selected").val(),
                 keyword: $('#search').val(),
                 sortBy: $("#sortBy").find(":selected").val(),
                 sortOrder: $("#sortOrder").find(":selected").val()
@@ -58,7 +59,7 @@ include 'admin_header.php';
     }
 </script>
 
-<!-- display recorda in table list -->
+<!-- display records in table list -->
 <div class="category-content">
 
 
@@ -67,26 +68,15 @@ include 'admin_header.php';
             <div class="action-btn-wrapper" style="justify-content: space-between;">
                 <div class="action-btn-box">
                     <div class="selection-block">
-                        <!-- filter by status (active / inactive) -->
-                        <div class="d-flex-column">
-                            <label for="select-status" class="filter-title">Status : </label>
-                            <select name="select-status" id="select-status" class="selection" onchange="getRecord()">
-                                <option value="">All</option>
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
-                                <option value="2">Blocked</option>
-                            </select>
-
-                        </div>
-
-
                         <!-- Sort option -->
                         <div class="d-flex-column">
                             <label for="sortBy" class="filter-title">Sort By:</label>
                             <select name="sortBy" id="sortBy" class="selection" onchange="getRecord()">
                                 <option value="">Default</option>
-                                <option value="uname">Name</option>
-                                <option value="email">Email</option>
+                                <option value="studName">Name</option>
+                                <option value="studEmail">Email</option>
+                                <option value="studState">State</option>
+                                <option value="studPhone">Contact</option>
                             </select>
 
                         </div>
@@ -102,7 +92,7 @@ include 'admin_header.php';
 
                     </div>
                     <div class="search-bar">
-                        <?= html_text('search', 'placeholder="Search by name / email / contact ... "') ?>
+                        <?= html_text('search', 'placeholder="Search by name / email / address / city / state/ contact ... "') ?>
                         <button type='button'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="11" cy="11" r="8"></circle>
@@ -134,4 +124,5 @@ include 'admin_header.php';
     </table>
 
 </div>
+
 <?php include 'admin_footer.php' ?>
