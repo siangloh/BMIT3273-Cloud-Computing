@@ -18,7 +18,7 @@ if (is_post()) {
                 session_start();
             }
             $_SESSION['admin_id'] = $admin->uid;
-            alert_msg('Login Successful', 'admin_profile.php');
+            alert_msg('Login Successful', 'admin_homepage.php');
         }
     } else {
         alert_msg('Invalid email or password. ', 'admin_login.php');
