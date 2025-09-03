@@ -31,9 +31,7 @@ include 'admin_header.php';
             if (Timeout) {
                 clearTimeout(Timeout);
             } // Clear existing timeout, if any
-            Timeout = setTimeout(function() {
-                getRecord();
-            }, DelayInMs);
+            Timeout = setTimeout(function() { getRecord(); }, DelayInMs);
         });
     });
 
@@ -124,5 +122,4 @@ include 'admin_header.php';
     </table>
 
 </div>
-
 <?php include 'admin_footer.php' ?>

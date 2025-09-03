@@ -58,7 +58,7 @@ if (is_post()) {
                 move_uploaded_file($file['tmp_name'], '../profilePic/' . $newFileName);
             }
             
-           sweet_alert_msg('New student record added successfully!', 'success', 'student_list.php', false);
+            alert_msg('New student record added successfully!', 'student_list.php');
             exit(); 
         } else {
             // fail

@@ -11,7 +11,7 @@ if (isset($_SESSION['admin_id'])) {
 
 // check admin login
 if (empty($admin)) {
-    sweet_alert_msg('Login Required!', 'error','admin_login.php', true);
+    alert_msg('Login Required!', 'admin_login.php');
     session_destroy();
 }
 ?>
@@ -19,10 +19,10 @@ if (empty($admin)) {
 <head>
     <meta charset="UTF-8">
     <title><?= $_title ?? "Untitled" ?></title>
-    <link href="../css/utility.css?v=2" rel="stylesheet" type="text/css" />
-    <link href="../css/admin_header.css?v=2" rel="stylesheet" type="text/css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js?v=2"></script>
-    <script src="../js/app.js?v=2"></script>
+    <link href="../css/utility.css" rel="stylesheet" type="text/css" />
+    <link href="../css/admin_header.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="../js/app.js"></script>
 </head>
 
 <script>
@@ -67,10 +67,6 @@ if (empty($admin)) {
                             <div class="menu-title" data-get="admin_list.php">Admin</div>
                         <?php endif ?> -->
                         <div class="menu-title" data-get="student_list.php">Student List</div>
-                        <!-- <div class="menu-title" data-get="categoryList.php">Category</div>
-                        <div class="menu-title" data-get="productList.php">Product</div>                      
-                        <div class="menu-title" data-get="optionList.php">Options</div>                      
-                        <div class="menu-title" data-get="order_record.php">Order</div> -->
                     </div>
                 </div>
             </div>

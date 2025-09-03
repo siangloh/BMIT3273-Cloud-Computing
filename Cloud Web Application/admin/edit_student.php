@@ -50,7 +50,7 @@ if (isset($_GET['id'])) {
                 $stmt = $_db->prepare("UPDATE student SET studName = ?, studPic = ?, studEmail = ?, studPhone = ?, studAddress = ?, studCity = ?, studState = ? WHERE studid = ?");
                 $stmt->execute([$studName, $newFileName, $studEmail, $studPhone, $studAddress, $studCity, $studState, $id]);
                 if ($stmt->rowCount() < 1) {
-                    sweet_alert_msg("Unable to update details. Please try again.", 'error', null, false);
+                    alert_msg("Unable to update details. Please try again.");
                 } else {
                     //save the file
                     if ($newFileName != $student->studPic) {
@@ -60,15 +60,15 @@ if (isset($_GET['id'])) {
                             unlink("../profilePic/$student->studPic");
                         }
                     }
-                    sweet_alert_msg('Record update successful', 'success', null, false);
+                    alert_msg('Record update successful');
                 }
             }
         }
     } else {
-        sweet_alert_msg('Student not exist.', 'error', $_SERVER['HTTP_REFERER'], false);
+        alert_msg('Student not exist.', $_SERVER['HTTP_REFERER']);
     }
 } else {
-    sweet_alert_msg("No student selected.", 'error', $_SERVER['HTTP_REFERER'], false);
+    alert_msg("No student selected.", $_SERVER['HTTP_REFERER']);
 }
 
 $result = $_db->query("SELECT * FROM student WHERE studid = '$id'");

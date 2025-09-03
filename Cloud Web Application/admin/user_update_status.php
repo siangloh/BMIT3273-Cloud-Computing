@@ -7,7 +7,7 @@ if (is_post()) {
     if (!is_array($ids)) $ids = [$ids];
 
     if (sizeof($ids) < 1) {
-        sweet_alert_msg("No item selected. ", 'error', 'student_list.php', false);
+        alert_msg("No item selected. ", 'student_list.php');
     }
 
     $num = 0;
@@ -24,12 +24,12 @@ if (is_post()) {
             }
         }
     } else {
-        sweet_alert_msg('Invalid action.', 'error', $_SERVER['HTTP_REFERER'], false);
+        alert_msg('Invalid action.', $_SERVER['HTTP_REFERER']);
     }
     
     if ($num > 0) {
-        sweet_alert_msg("$num record(s) has been $action. ", 'success', $_SERVER['HTTP_REFERER'], false);
+        alert_msg("$num record(s) has been $action. ", $_SERVER['HTTP_REFERER']);
     } else {
-        sweet_alert_msg("No changes made. ", 'info', $_SERVER['HTTP_REFERER'], false);
+        alert_msg("No changes made. ", $_SERVER['HTTP_REFERER']);
     }
 }

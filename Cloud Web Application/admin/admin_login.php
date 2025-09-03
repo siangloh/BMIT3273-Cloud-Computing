@@ -11,26 +11,26 @@ if (is_post()) {
     if (!empty($admin)) {
         // check status
         if ($admin->status != 1) {
-            sweet_alert_msg('This account is blocked. ', 'error', 'admin_login.php', false);
+            alert_msg('This account is blocked. ', 'admin_login.php');
         } else {
             // successfully login -> set session
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
             $_SESSION['admin_id'] = $admin->uid;
-            sweet_alert_msg('Login Successful', 'success', 'admin_profile.php', true);
+            alert_msg('Login Successful', 'admin_homepage.php');
         }
     } else {
-        sweet_alert_msg('Invalid email or password. ', 'error', 'admin_login.php', false);
+        alert_msg('Invalid email or password. ', 'admin_login.php');
     }
 }
 ?>
 
 <head>
-    <link rel="stylesheet" href="../css/admin_login.css?v=2">
-    <link rel="stylesheet" href="../css/login.css?v=2">
-    <link rel="stylesheet" href="../css/utility.css?v=2">
-    <link rel="stylesheet" href="../css/change_pass.css?v=2">
+    <link rel="stylesheet" href="../css/admin_login.css">
+    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="../css/utility.css">
+    <link rel="stylesheet" href="../css/change_pass.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="../js/app.js"></script>
 </head>
