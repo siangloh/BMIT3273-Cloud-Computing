@@ -423,11 +423,20 @@ function checklogin()
 // Database Setups and Functions
 // ============================================================================
 
-// Global PDO object
-$host = 'assm-db.c78pt9oivqs4.us-east-1.rds.amazonaws.com'; //RDS endpoint
-$dbname = 'studentrecord'; //RDS DB name
-$username = 'admin'; //RDS username
-$password = 'abcd1234'; //RDS password
+require 'get_secrets.php';
+$creds = getDbCredentials('MyAssmDBSecret'); // name of the secret in AWS Secrets Manager
+
+$host = $creds['host'];
+$username = $creds['username'];
+$password = $creds['password'];
+$dbname = $creds['dbname'];
+$port = $creds['port'];
+
+$conn = new mysqli($host, $username, $password, $dbname, $port);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 
 // Global PDO object
 try {
@@ -468,6 +477,26 @@ function is_exists($value, $table, $field)
 function alert_msg($msg, $url = null)
 {
     echo "<script>alert('$msg');" . ($url != null ? "window.location.href='$url';" : "") . "</script>";
+}
+
+// Sweet Alert Message just for some type of message except confirm message
+function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false)
+{
+    echo "<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            text: '$msg',
+            icon: '$type',
+            showConfirmButton: true,
+        }).then(() => {
+            " . ($url
+        ? ($replace
+            ? "window.location.replace('$url');"
+            : "window.location.href='$url';")
+        : "") . "
+        });
+    });
+    </script>";
 }
 
 function alert_msg_refresh($msg, $url = null)
@@ -723,4 +752,3 @@ function generate_password($length = 8)
 
     return $str;
 }
-

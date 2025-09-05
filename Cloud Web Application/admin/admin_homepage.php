@@ -4,11 +4,11 @@ $_title = "Homepage";
 $_pageTitle = "Admin Dashboard";
 include 'admin_header.php';
 
-// $hotSales = $_db->query("SELECT p.*, IFNULL((SELECT SUM(qty) FROM `order` o JOIN order_record r ON o.orderID = r.orderID WHERE productID = p.productID AND DATE(o.orderDate) = CURRENT_DATE()), 0) totalSales FROM product p WHERE status = '1' HAVING totalSales > 0 ORDER BY totalSales DESC LIMIT 5");
+$hotSales = $_db->query("SELECT p.*, IFNULL((SELECT SUM(qty) FROM `order` o JOIN order_record r ON o.orderID = r.orderID WHERE productID = p.productID AND DATE(o.orderDate) = CURRENT_DATE()), 0) totalSales FROM product p WHERE status = '1' HAVING totalSales > 0 ORDER BY totalSales DESC LIMIT 5");
 
-// $monlySales = $_db->query("SELECT p.*, IFNULL((SELECT SUM(qty) FROM `order` o JOIN order_record r ON o.orderID = r.orderID WHERE productID = p.productID AND Month(o.orderDate) = Month(CURRENT_DATE())), 0) totalSales FROM product p WHERE status = '1' HAVING totalSales > 0 ORDER BY totalSales DESC LIMIT 5");
+$monlySales = $_db->query("SELECT p.*, IFNULL((SELECT SUM(qty) FROM `order` o JOIN order_record r ON o.orderID = r.orderID WHERE productID = p.productID AND Month(o.orderDate) = Month(CURRENT_DATE())), 0) totalSales FROM product p WHERE status = '1' HAVING totalSales > 0 ORDER BY totalSales DESC LIMIT 5");
 
-// $recentOrder = $_db->query("SELECT * FROM `order` WHERE DATE(orderDate) = CURRENT_DATE;");
+$recentOrder = $_db->query("SELECT * FROM `order` WHERE DATE(orderDate) = CURRENT_DATE;");
 ?>
 
 <head>
@@ -16,10 +16,8 @@ include 'admin_header.php';
 </head>
 
 <div class="items-data">
-    <h3 class="section-title">New Students for the Month</h3>
-    <?php if (false
-        // $recentOrder->rowCount() > 0
-        ): ?>
+    <h3 class="section-title">Today Orders</h3>
+    <?php if ($recentOrder->rowCount() > 0): ?>
         <div class="analysis-data-list">
             <table class="data-table" id="table-record">
                 <tr class="table-header-row">
@@ -49,10 +47,7 @@ include 'admin_header.php';
 
     <div class="items-data">
         <h3 class="section-title">Daily Trending Items</h3>
-        <?php if (
-            false
-            // $hotSales->rowCount() > 0
-        ): ?>
+        <?php if ($hotSales->rowCount() > 0): ?>
             <div class="analysis-data-list">
                 <table class="data-table" id="table-record">
                     <tr class="table-header-row">
@@ -79,7 +74,7 @@ include 'admin_header.php';
 
     <div class="items-data">
         <h3 class="section-title"><?= date('F') ?> Trending Items</h3>
-        <?php if (false): ?>
+        <?php if ($monlySales->rowCount() > 0): ?>
             <div class="analysis-data-list">
                 <table class="data-table" id="table-record">
                     <tr class="table-header-row">
@@ -88,8 +83,10 @@ include 'admin_header.php';
                         <td>Total Income</td>
                     </tr>
                     <?php foreach ($monlySales as $record) :
+                        $pic = $_db->query("SELECT pic FROM product_image WHERE productID = '$record->productID' LIMIT 1")->fetch();
                     ?>
                         <tr>
+                            <td><img src="../productImg/<?= $pic->pic ?>"></td>
                             <td><?= $record->name ?></td>
                             <td><?= $record->totalSales ?></td>
                             <td>RM <?= sprintf("%.2f", $record->price * $record->totalSales) ?></td>
