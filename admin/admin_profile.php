@@ -16,7 +16,7 @@ $s3Client = new S3Client([
 ]);
 
 // Bucket name in S3
-$bucketName = 'assm-student-images';
+$bucketName = 'assm-student-web-bucketss';
 
 $err = [];
 if (is_post()) {
