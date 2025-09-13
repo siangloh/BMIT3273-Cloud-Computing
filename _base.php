@@ -424,11 +424,11 @@ function checklogin()
 // ============================================================================
 
 // Global PDO object
-$host = 'assm-db.c78pt9oivqs4.us-east-1.rds.amazonaws.com'; //RDS endpoint
+// $host = 'assm-db.c78pt9oivqs4.us-east-1.rds.amazonaws.com'; //RDS endpoint
 $dbname = 'studentrecord'; //RDS DB name
 $username = 'admin'; //RDS username
 $password = 'abcd1234'; //RDS password
-// $host = "localhost";
+$host = "localhost";
 
 // Global PDO object
 try {
