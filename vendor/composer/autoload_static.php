@@ -24,6 +24,7 @@ class ComposerStaticInit85325c0f13ef626582fea9d1df635a9d
         array (
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
+            'Predis\\' => 7,
         ),
         'J' => 
         array (
@@ -54,6 +55,10 @@ class ComposerStaticInit85325c0f13ef626582fea9d1df635a9d
         'Psr\\Http\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
+        ),
+        'Predis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/predis/predis/src',
         ),
         'JmesPath\\' => 
         array (
