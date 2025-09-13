@@ -14,6 +14,22 @@ if (empty($admin)) {
     sweet_alert_msg('Login Required!', 'error','admin_login.php', true);
     session_destroy();
 }
+
+// AWS SDK Setup
+require '../vendor/autoload.php';
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+use Aws\Credentials\CredentialProvider;
+
+// Initialize S3 client
+$s3Client = new S3Client([
+    'version'     => 'latest',
+    'region'      => 'us-east-1',
+]);
+
+// Bucket name in S3
+$bucketName = 'assm-student-images';
+
 ?>
 
 <head>
@@ -43,13 +59,13 @@ if (empty($admin)) {
         <div class="sidebar">
             <div class="sidebar-content">
                 <div class="logo" data-get="admin_homepage.php">
-                    <p style="font-family: serif; font-size: 25px; font-weight: bold; font-style: italic; text-transform: uppercase; letter-spacing: 2px; line-height: 1.5;">Example University</p>
+                    <p style="font-family: serif; font-size: 25px; font-weight: bold; font-style: italic; text-transform: uppercase; letter-spacing: 2px; line-height: 1.5;">Eastbridge University</p>
                 </div>
                 <div class="menu-list">
                     <div class="admin-profile">
                         <div class="profile d-flex-center" data-get="admin_profile.php">
                             <div class="admin-pic pointer-event-none">
-                            <img src="../profilePic/<?= $admin?->proPic ?>" alt="" class="admin-pic">
+                            <img src="<?= !empty($admin->proPic) ? 'https://' . $bucketName . '.s3.amazonaws.com/user-images/' . $admin->proPic : '../profilePic/profile.png' ?>" alt="" class="admin-pic">
                         </div>
                         <div class="admin-name pointer-event-none"><?= $admin?->uname ?></div>
                         </div>

@@ -3,6 +3,21 @@ $_title = "My Profile";
 require_once '../_base.php';
 global $_adminID;
 
+// AWS SDK Setup
+require '../vendor/autoload.php';
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+use Aws\Credentials\CredentialProvider;
+
+// Initialize S3 client
+$s3Client = new S3Client([
+    'version'     => 'latest',
+    'region'      => 'us-east-1',
+]);
+
+// Bucket name in S3
+$bucketName = 'assm-student-images';
+
 $err = [];
 if (is_post()) {
     $upic = post("upic");
@@ -16,19 +31,49 @@ if (is_post()) {
     if ($uemail != $me->email) $_err["uemail"] = checkRegisterEmail($uemail) ?? '';
     if ($umobile != $me->contact)  $_err["umobile"] = checkContact($umobile) ?? '';
 
-    if (isset($_FILES['upic'])) {
+if (isset($_FILES['upic'])) {
         $file = $_FILES['upic'];
         $_err["upic"] = checkUploadPic($file);
 
         // no error
         if (empty($_err["upic"])) {
-            //everything okey, save the file
-            //create a unique id and use it as file name
+            // create a unique id and use it as file name
             $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             $newFileName = isset($_FILES["upic"]) && !empty($_FILES["upic"] && !empty($ext)) ? uniqid() . '.' . $ext : $me->proPic;
+
+            // Upload the image to S3
+            try {
+                // Upload the image file to S3 in 'user-images' folder
+                $result = $s3Client->upload(
+                    $bucketName,
+                    'user-images/' . $newFileName,
+                    fopen($file['tmp_name'], 'rb')
+                );
+
+                // Get the URL of the uploaded file
+                $fileUrl = $result['ObjectURL'];
+
+                // Delete old picture from S3 if it exists
+                if ($me->proPic != null) {
+                    try {
+                        $s3Client->deleteObject([
+                            'Bucket' => $bucketName,
+                            'Key' => 'user-images/' . $me->proPic
+                        ]);
+                    } catch (AwsException $e) {
+                        $_err['upic'] = 'Error deleting old file from S3: ' . $e->getMessage();
+                    }
+                }
+
+            } catch (AwsException $e) {
+                $_err['upic'] = 'Error uploading file to S3: ' . $e->getMessage();
+                $newFileName = $me->proPic;
+            }
         } else {
             $newFileName = $me->proPic;
         }
+    } else {
+        $newFileName = $me->proPic;
     }
 
     $_err = array_filter($_err);
@@ -39,13 +84,6 @@ if (is_post()) {
         if ($stmt->rowCount() < 1) {
             sweet_alert_msg("No changes made.", 'info', null, false);
         } else {
-            //save the file
-            if ($newFileName != $me->proPic) {
-                move_uploaded_file($file['tmp_name'], '../profilePic/' . $newFileName);
-                // delete old pic from file
-                if ($me->proPic != null)
-                    unlink("../profilePic/$me->proPic");
-            }
             sweet_alert_msg('Record update successful', 'success', null, false);
         }
     }
@@ -122,7 +160,7 @@ $superadmin = $admin->superadmin;
                             <!-- photo preview -->
                             <label class="photo" for="upic" id="upload-preview" tabindex="0">
                                 <?= html_file('upic', 'image/*', 'hidden') ?>
-                                <img src="../profilePic/<?= $upic ?? 'profile.png' ?>">
+                                <img src="<?= $upic ? 'https://' . $bucketName . '.s3.amazonaws.com/user-images/' . $upic : '../profilePic/profile.png' ?>">
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 8l-5-5-5 5M12 4.2v10.3" />
