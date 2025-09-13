@@ -426,10 +426,39 @@ function checklogin()
 // Database Setups and Functions
 // ============================================================================
 
+// $host = 'assm-db.czi26mueg446.us-east-1.rds.amazonaws.com'; //RDS endpoint
+// $dbname = 'studentrecord'; //RDS DB name
+// $username = 'admin'; //RDS username
+// $password = 'abcd1234'; //RDS password
+
+require 'get_secrets.php';
+$creds = getDbCredentials('MyAssmDBSecret'); // name of the secret in AWS Secrets Manager
+
+$host = $creds['host'];
+$username = $creds['username'];
+$password = $creds['password'];
+$dbname = $creds['dbname'];
+$port = $creds['port'];
+
+$conn = new mysqli($host, $username, $password, $dbname, $port);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+
 // Global PDO object
-$_db = new PDO('mysql:dbname=studentrecord', 'root', '', [
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-]);
+try {
+    $_db = new PDO("mysql:host=$host;dbname=$dbname", $username, $password, [
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    ]);
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
+
+//$_db = new PDO('mysql:dbname=studentrecord', 'root', '', [
+//    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+//]);
 
 // Is unique?
 function is_unique($value, $table, $field)
@@ -459,7 +488,8 @@ function alert_msg($msg, $url = null)
 }
 
 // Sweet Alert Message just for some type of message except confirm message
-function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false) {
+function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false)
+{    
     echo "<script>
     document.addEventListener('DOMContentLoaded', function() {
         Swal.fire({
@@ -730,3 +760,5 @@ function generate_password($length = 8)
 
     return $str;
 }
+
+
