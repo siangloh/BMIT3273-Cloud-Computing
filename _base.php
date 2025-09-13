@@ -1,7 +1,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php
-require_once __DIR__ . '/config.php';
 
 // ============================================================================
 // PHP Setups
@@ -51,11 +50,7 @@ function req($key, $value = null)
 function redirect($url = null)
 {
     $url ??= $_SERVER['REQUEST_URI'];
-    // header("Location: $url");
-    if ($url == '/') {
-        header("Location: $url");
-    }
-    header("Location: " . BASE_URL . "/$url");
+    header("Location: $url");
     exit();
 }
 
@@ -423,7 +418,7 @@ function checklogin()
     global $_userID;
     global $_db;
     if (empty($_adminID) && empty($_userID)) {
-        sweet_alert_msg("Login required", 'error', 'login.php', true);
+        sweet_alert_msg("Login required",'error' ,'login.php', true);
     }
 }
 
@@ -494,7 +489,7 @@ function alert_msg($msg, $url = null)
 
 // Sweet Alert Message just for some type of message except confirm message
 function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false)
-{
+{    
     echo "<script>
     document.addEventListener('DOMContentLoaded', function() {
         Swal.fire({
@@ -502,11 +497,11 @@ function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false)
             icon: '$type',
             showConfirmButton: true,
         }).then(() => {
-            " . ($url
-        ? ($replace
-            ? "window.location.replace('" . BASE_URL . "/$url');"
-            : "window.location.href='" . BASE_URL . "/$url';")
-        : "") . "
+            " . ($url 
+                ? ($replace 
+                    ? "window.location.replace('$url');" 
+                    : "window.location.href='$url';") 
+                : "") . "
         });
     });
     </script>";
@@ -765,3 +760,5 @@ function generate_password($length = 8)
 
     return $str;
 }
+
+
