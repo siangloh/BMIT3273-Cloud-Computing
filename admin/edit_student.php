@@ -18,7 +18,7 @@ $s3Client = new S3Client([
 ]);
 
 // Bucket name in S3
-$bucketName = 'student-web-bucket'; 
+$bucketName = 'assm-student-web-buckets'; 
 
 
 // get method -- check if the url have id

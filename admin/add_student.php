@@ -23,7 +23,7 @@ $s3Client = new S3Client([
 ]);
 
 // Bucket name in S3
-$bucketName = 'student-web-bucket';  
+$bucketName = 'assm-student-web-buckets';  
 
 if (is_post()) {
     // get data filled in the form
