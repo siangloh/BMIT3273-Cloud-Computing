@@ -501,8 +501,8 @@ function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false)
         }).then(() => {
             " . ($url 
                 ? ($replace 
-                    ? "window.location.replace('$url');" 
-                    : "window.location.href='$url';") 
+                    ? "window.location.replace('". BASE_URL ."/$url');" 
+                    : "window.location.href='". BASE_URL ."/$url';") 
                 : "") . "
         });
     });
