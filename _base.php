@@ -426,7 +426,7 @@ function checklogin()
 // Database Setups and Functions
 // ============================================================================
 
-$host = 'assm-db.czi26mueg446.us-east-1.rds.amazonaws.com'; //RDS endpoint
+$host = 'assm-db.c78pt9oivqs4.us-east-1.rds.amazonaws.com'; //RDS endpoint
 $dbname = 'studentrecord'; //RDS DB name
 $username = 'admin'; //RDS username
 $password = 'abcd1234'; //RDS password
