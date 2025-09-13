@@ -433,7 +433,7 @@ function checklogin()
 
 require 'get_secrets.php';
 $creds = getDbCredentials('MyAssmDBSecret'); // name of the secret in AWS Secrets Manager
-
+var_dump($creds); die();
 $host = $creds['host'];
 $username = $creds['username'];
 $password = $creds['password'];
