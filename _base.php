@@ -1,3 +1,5 @@
+require_once __DIR__ . '/config.php';
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php
@@ -50,7 +52,8 @@ function req($key, $value = null)
 function redirect($url = null)
 {
     $url ??= $_SERVER['REQUEST_URI'];
-    header("Location: $url");
+    // header("Location: $url");
+    header("Location: " . BASE_URL . "/url");
     exit();
 }
 
