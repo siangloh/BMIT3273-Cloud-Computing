@@ -488,24 +488,37 @@ function alert_msg($msg, $url = null)
 }
 
 // Sweet Alert Message just for some type of message except confirm message
-function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false)
-{    
+function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false, $remainPage = false)
+{
     echo "<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        Swal.fire({
-            text: '$msg',
-            icon: '$type',
-            showConfirmButton: true,
-        }).then(() => {
-            " . ($url 
-                ? ($replace 
-                    ? "window.location.replace('$url');" 
-                    : "window.location.href='$url';") 
-                : "") . "
-        });
-    });
+    document.addEventListener('DOMContentLoaded', function() {";
+    
+    if (!$remainPage) {
+        // With redirect
+        echo "Swal.fire({
+                text: '$msg',
+                icon: '$type',
+                showConfirmButton: true,
+            }).then(() => {
+                " . ($url 
+                    ? ($replace 
+                        ? "window.location.replace('$url');" 
+                        : "window.location.href='$url';") 
+                    : "") . "
+            });";
+    } else {
+        // Without redirect
+        echo "Swal.fire({
+                text: '$msg',
+                icon: '$type',
+                showConfirmButton: true,
+            });";
+    }
+
+    echo "});
     </script>";
 }
+
 
 function alert_msg_refresh($msg, $url = null)
 {

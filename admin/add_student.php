@@ -163,7 +163,7 @@ if (is_post()) {
                     <?= err('spic') ?>
                     <!-- photo preview -->
                     <label id="upload-preview" tabindex="0">
-                        <img src="../profilePic/profile.png">
+                        <img src="https://assm-student-web-bucketss.s3.amazonaws.com/user-images/profile.png">
                     </label>
                 </div>
                 <!-- ----------------------------- -->
