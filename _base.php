@@ -1,3 +1,5 @@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <?php
 
 // ============================================================================
@@ -244,7 +246,7 @@ function html_checkbox($key, $label = '', $attr = '')
     $value = encode($GLOBALS[$key] ?? '');
     $status = $value == 0 ? 'checked' : '';
     $name = $name ?? $key;
-    echo "<label><input type='checkbox' id='$key' name='$key' value='$value' $status $attr>$label</label>";
+    echo "<label style='user-select:none'><input type='checkbox' id='$key' name='$key' value='$value' $status $attr>$label</label>";
 }
 
 // Generate SINGLE <input type='checkbox'> for list
@@ -368,7 +370,8 @@ $_adminID = $_SESSION['admin_id'] ?? null;
 function login($id, $url = '/')
 {
     $_SESSION['uid'] = $id;
-    alert_msg("Log in successful", "/");
+    // alert_msg("Log in successful", "/");
+    sweet_alert_msg("Log in successful", "success",  "/", true);
 }
 
 // Logout user
@@ -406,7 +409,7 @@ function checkSuperadmin()
         }
     }
 
-    alert_msg("Missing authentication to this page. ", '../logout.php');
+    sweet_alert_msg("Missing authentication to this page. ", 'error', 'admin/logout.php', true);
 }
 
 function checklogin()
@@ -415,7 +418,7 @@ function checklogin()
     global $_userID;
     global $_db;
     if (empty($_adminID) && empty($_userID)) {
-        alert_msg("Login required", 'login.php');
+        sweet_alert_msg("Login required",'error' ,'login.php', true);
     }
 }
 
@@ -423,12 +426,25 @@ function checklogin()
 // Database Setups and Functions
 // ============================================================================
 
-// Global PDO object
-$host = 'assm-db.chwacs42aib3.us-east-1.rds.amazonaws.com'; //RDS endpoint
-$dbname = 'studentrecord'; //RDS DB name
-$username = 'admin'; //RDS username
-$password = 'abcd1234'; //RDS password
-// $host = "localhost";
+// $host = 'assm-db.czi26mueg446.us-east-1.rds.amazonaws.com'; //RDS endpoint
+// $dbname = 'studentrecord'; //RDS DB name
+// $username = 'admin'; //RDS username
+// $password = 'abcd1234'; //RDS password
+
+require 'get_secrets.php';
+$creds = getDbCredentials('MyAssmDBSecret'); // name of the secret in AWS Secrets Manager
+
+$host = $creds['host'];
+$username = $creds['username'];
+$password = $creds['password'];
+$dbname = $creds['dbname'];
+$port = $creds['port'];
+
+$conn = new mysqli($host, $username, $password, $dbname, $port);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 
 // Global PDO object
 try {
@@ -469,6 +485,26 @@ function is_exists($value, $table, $field)
 function alert_msg($msg, $url = null)
 {
     echo "<script>alert('$msg');" . ($url != null ? "window.location.href='$url';" : "") . "</script>";
+}
+
+// Sweet Alert Message just for some type of message except confirm message
+function sweet_alert_msg($msg, $type = 'success', $url = null, $replace = false)
+{    
+    echo "<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            text: '$msg',
+            icon: '$type',
+            showConfirmButton: true,
+        }).then(() => {
+            " . ($url 
+                ? ($replace 
+                    ? "window.location.replace('$url');" 
+                    : "window.location.href='$url';") 
+                : "") . "
+        });
+    });
+    </script>";
 }
 
 function alert_msg_refresh($msg, $url = null)
@@ -724,4 +760,5 @@ function generate_password($length = 8)
 
     return $str;
 }
+
 

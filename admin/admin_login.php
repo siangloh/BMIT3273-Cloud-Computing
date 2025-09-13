@@ -11,17 +11,17 @@ if (is_post()) {
     if (!empty($admin)) {
         // check status
         if ($admin->status != 1) {
-            alert_msg('This account is blocked. ', 'admin_login.php');
+            sweet_alert_msg('This account is blocked. ', 'error', 'admin_login.php', false);
         } else {
             // successfully login -> set session
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
             $_SESSION['admin_id'] = $admin->uid;
-            alert_msg('Login Successful', 'admin_homepage.php');
+            sweet_alert_msg('Login Successful', 'success', 'admin_profile.php', true);
         }
     } else {
-        alert_msg('Invalid email or password. ', 'admin_login.php');
+        sweet_alert_msg('Invalid email or password. ', 'error', 'admin_login.php', false);
     }
 }
 ?>

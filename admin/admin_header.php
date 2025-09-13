@@ -11,7 +11,7 @@ if (isset($_SESSION['admin_id'])) {
 
 // check admin login
 if (empty($admin)) {
-    alert_msg('Login Required!', 'admin_login.php');
+    sweet_alert_msg('Login Required!', 'error','admin_login.php', true);
     session_destroy();
 }
 ?>
@@ -67,6 +67,10 @@ if (empty($admin)) {
                             <div class="menu-title" data-get="admin_list.php">Admin</div>
                         <?php endif ?> -->
                         <div class="menu-title" data-get="student_list.php">Student List</div>
+                        <!-- <div class="menu-title" data-get="categoryList.php">Category</div>
+                        <div class="menu-title" data-get="productList.php">Product</div>                      
+                        <div class="menu-title" data-get="optionList.php">Options</div>                      
+                        <div class="menu-title" data-get="order_record.php">Order</div> -->
                     </div>
                 </div>
             </div>
