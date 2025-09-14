@@ -12,7 +12,7 @@ include 'admin_header.php';
 ?>
 
 <head>
-    <link href="../css/admin_homepage.css" rel="stylesheet" type="text/css" />
+    <link href="../css/admin_homepage.css?v=2.1" rel="stylesheet" type="text/css" />
     <title>Student Records Management System with Analytics</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
