@@ -1,17 +1,22 @@
 <?php
+
+use Aws\Exception\AwsException;
+
 $_title = "My Profile";
 require_once '../_base.php';
 
-// Include header to get S3 client and admin data
-include './admin_header.php';
+// Check admin login first (before including header)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Ensure we have admin data
-if (!$admin) {
+if (!isset($_SESSION['admin_id'])) {
     sweet_alert_msg('Session expired. Please login again.', 'error', 'admin_login.php', true);
     exit;
 }
 
 $_err = []; // Use consistent error array naming
+$profileUpdated = false; // Flag to track if profile was updated
 
 if (is_post()) {
     // Get form data
@@ -20,8 +25,8 @@ if (is_post()) {
     $umobile = post("umobile") ?? "";
 
     // Get current admin data for comparison
-    $stmt = $_db->prepare("SELECT * FROM user WHERE uid = ?");
-    $stmt->execute([$admin->uid]);
+    $stmt = $_db->prepare("SELECT * FROM user WHERE uid = ? AND status = '1' AND level = '1'");
+    $stmt->execute([$_SESSION['admin_id']]);
     $currentAdmin = $stmt->fetch();
 
     if (!$currentAdmin) {
@@ -34,25 +39,35 @@ if (is_post()) {
         $nameCheck = checkUsername($uname);
         if ($nameCheck) $_err["uname"] = $nameCheck;
     }
-    
+
     if ($uemail != $currentAdmin->email) {
         $emailCheck = checkRegisterEmail($uemail);
         if ($emailCheck) $_err["uemail"] = $emailCheck;
     }
-    
+
     if ($umobile != $currentAdmin->contact) {
         $contactCheck = checkContact($umobile);
         if ($contactCheck) $_err["umobile"] = $contactCheck;
     }
 
+    // AWS S3 Setup (needed before header include for S3 operations)
+    require '../vendor/autoload.php';
+    use Aws\S3\S3Client;
+
+    $s3Client = new S3Client([
+        'version'     => 'latest',
+        'region'      => 'us-east-1',
+    ]);
+    $bucketName = 'assm-student-web-bucketss';
+
     // Handle profile picture upload
     $newFileName = $currentAdmin->proPic; // Default to current image
     $imageUpdated = false;
-    
+
     if (isset($_FILES['upic']) && $_FILES['upic']['error'] === UPLOAD_ERR_OK) {
         $file = $_FILES['upic'];
         $uploadCheck = checkUploadPic($file);
-        
+
         if ($uploadCheck) {
             $_err["upic"] = $uploadCheck;
         } else {
@@ -69,26 +84,25 @@ if (is_post()) {
                 );
 
                 $imageUpdated = true;
-                
+
                 // Delete old image from S3 if it exists and is not the default profile image
-                if ($currentAdmin->proPic && 
-                    $currentAdmin->proPic !== 'profile.png' && 
-                    $currentAdmin->proPic !== $newFileName) {
-                    
+                if (
+                    $currentAdmin->proPic &&
+                    $currentAdmin->proPic !== 'profile.png' &&
+                    $currentAdmin->proPic !== $newFileName
+                ) {
                     try {
                         $s3Client->deleteObject([
                             'Bucket' => $bucketName,
                             'Key'    => 'user-images/' . $currentAdmin->proPic
                         ]);
                     } catch (AwsException $e) {
-                        // Log the error but don't fail the update
                         error_log('Failed to delete old admin image from S3: ' . $e->getMessage());
                     }
                 }
-                
             } catch (AwsException $e) {
                 $_err['upic'] = 'Error uploading file to S3: ' . $e->getMessage();
-                $newFileName = $currentAdmin->proPic; // Revert to existing file
+                $newFileName = $currentAdmin->proPic;
                 $imageUpdated = false;
             }
         }
@@ -105,22 +119,20 @@ if (is_post()) {
                 SET uname = ?, email = ?, contact = ?, proPic = ? 
                 WHERE uid = ?
             ");
-            
-            $stmt->execute([$uname, $uemail, $umobile, $newFileName, $admin->uid]);
-            
-            if ($stmt->rowCount() < 1 && !$imageUpdated) {
-                sweet_alert_msg("No changes detected. Record remains the same.", 'info', null, false, true);
-            } else {
-                // Update session data to reflect changes
-                $_SESSION['admin_updated'] = true;
-                sweet_alert_msg('Profile updated successfully', 'success', null, false);
+
+            $stmt->execute([$uname, $uemail, $umobile, $newFileName, $_SESSION['admin_id']]);
+
+            if ($stmt->rowCount() > 0 || $imageUpdated) {
+                $profileUpdated = true;
                 
-                // Refresh admin data for display
-                $stmt = $_db->prepare("SELECT * FROM user WHERE uid = ?");
-                $stmt->execute([$admin->uid]);
-                $admin = $stmt->fetch();
+                // Update session with new data for immediate reflection
+                $_SESSION['admin_name'] = $uname;
+                $_SESSION['admin_pic'] = $newFileName;
+                
+                sweet_alert_msg('Profile updated successfully', 'success', null, false);
+            } else {
+                sweet_alert_msg("No changes detected. Record remains the same.", 'info', null, false, true);
             }
-            
         } catch (PDOException $e) {
             // If database update fails and we uploaded a new image, clean up S3
             if ($imageUpdated && $newFileName !== $currentAdmin->proPic) {
@@ -133,14 +145,17 @@ if (is_post()) {
                     error_log('Failed to cleanup S3 after database error: ' . $s3e->getMessage());
                 }
             }
-            
+
             $_err['general'] = 'Database error occurred. Please try again.';
             error_log('Admin profile update error: ' . $e->getMessage());
         }
     }
 }
 
-// Set form values (will be overridden by POST data if form was submitted)
+// Include header AFTER processing the update
+include './admin_header.php';
+
+// Set form values for display
 $uname = $admin->uname;
 $uemail = $admin->email;
 $umobile = $admin->contact;
@@ -191,9 +206,10 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
         }
 
         .edit-area.active input {
-            background-color: #fff;
-            border-color: #ced4da;
-            color: #495057;
+            background: #373737;
+            color: white;
+            border-radius: 10px;
+            padding: 5px 20px;
         }
 
         .edit-area.active #upload-preview {
@@ -220,43 +236,12 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
 </head>
 
 <div class="profile-box">
-    <div class="profile-nav">
-        <div class="open" id="account-details">
-            <div class="nav-title">
-                <svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                    <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                        <g id="Rounded" transform="translate(-238.000000, -156.000000)">
-                            <g id="Action" transform="translate(100.000000, 100.000000)">
-                                <g id="-Round-/-Action-/-account_circle" transform="translate(136.000000, 54.000000)">
-                                    <g>
-                                        <polygon id="Path" points="0 0 24 0 24 24 0 24"></polygon>
-                                        <path d="M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,5 C13.66,5 15,6.34 15,8 C15,9.66 13.66,11 12,11 C10.34,11 9,9.66 9,8 C9,6.34 10.34,5 12,5 Z M12,19.2 C9.5,19.2 7.29,17.92 6,15.98 C6.03,13.99 10,12.9 12,12.9 C13.99,12.9 17.97,13.99 18,15.98 C16.71,17.92 14.5,19.2 12,19.2 Z" id="🔹Icon-Color" fill="#1D1D1D"></path>
-                                    </g>
-                                </g>
-                            </g>
-                        </g>
-                    </g>
-                </svg>
-                <span>Account Details</span>
-            </div>
-        </div>
-        <div id="change-password" onclick="window.location.href='change_pass.php'" role="button" tabindex="0">
-            <div class="nav-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <span>Change Password</span>
-            </div>
-        </div>
-    </div>
-    
     <div id="page-content">
         <div id="account-details">
             <?php if (isset($_err['general'])): ?>
                 <div class="error-message"><?= htmlspecialchars($_err['general']) ?></div>
             <?php endif; ?>
-            
+
             <form method="post" enctype="multipart/form-data">
                 <div class="edit-area disabled-edit" id="edit-area">
                     <div class="photo-area">
@@ -264,9 +249,9 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
                             <!-- photo preview -->
                             <label class="photo" for="upic" id="upload-preview" tabindex="0">
                                 <?= html_file('upic', 'image/*', 'hidden') ?>
-                                <img src="<?= $profilePicUrl ?>" 
-                                     alt="Admin Profile Picture"
-                                     onerror="this.src='https://<?= $bucketName ?>.s3.amazonaws.com/user-images/profile.png'">
+                                <img src="<?= $profilePicUrl ?>"
+                                    alt="Admin Profile Picture"
+                                    onerror="this.src='https://<?= $bucketName ?>.s3.amazonaws.com/user-images/profile.png'">
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 8l-5-5-5 5M12 4.2v10.3" />
@@ -282,30 +267,30 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
                             </div>
                         <?php endif ?>
                     </div>
-                    
+
                     <div class="input-data">
                         <div class="input-field">
                             <label for="uname" class="required">Username</label>
                             <?= html_text('uname', "placeholder='Enter Username'") ?>
                             <?= err("uname") ?>
                         </div>
-                        
+
                         <div class="input-field">
                             <label for="uemail" class="required">Email address</label>
                             <?= html_text('uemail', "placeholder='Enter Email (e.g. xxxx@xxx.xxx)'") ?>
                             <?= err("uemail") ?>
                         </div>
-                        
+
                         <div class="input-field">
                             <label for="umobile" class="required">Mobile</label>
                             <?= html_text('umobile', "placeholder='Enter Mobile Number (e.g. 0123456789)'") ?>
                             <?= err("umobile") ?>
                         </div>
                     </div>
-                    
+
                     <input type="submit" class="show-edit form-button" value="Save Changes">
                 </div>
-                
+
                 <input type="button" class="form-button hide-edit" value="Edit Profile" id="enable-edit">
             </form>
         </div>
@@ -313,42 +298,55 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
 </div>
 
 <script>
-$(document).ready(function() {
-    // Initially disable all form inputs except buttons
-    $('.disabled-edit input:not([type="button"]):not([type="submit"])').prop('disabled', true);
-    
-    $('#enable-edit').click(function() {
-        var editArea = $('#edit-area');
-        
-        // Enable all inputs
-        $('.disabled-edit input').prop('disabled', false);
-        
-        // Switch classes
-        editArea.removeClass('disabled-edit').addClass('active');
-        
-        // Focus on first input
-        $('#uname').focus();
+    $(document).ready(function() {
+        // Initially disable all form inputs except buttons
+        $('.disabled-edit input:not([type="button"]):not([type="submit"])').prop('disabled', true);
+
+        $('#enable-edit').click(function() {
+            var editArea = $('#edit-area');
+
+            // Enable all inputs
+            $('.disabled-edit input').prop('disabled', false);
+
+            // Switch classes
+            editArea.removeClass('disabled-edit').addClass('active');
+
+            // Focus on first input
+            $('#uname').focus();
+        });
+
+        // Handle image preview
+        $('#upic').change(function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#upload-preview img').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        <?php if ($profileUpdated): ?>
+        // Update sidebar in real-time after successful profile update
+        updateSidebarProfile();
+        <?php endif; ?>
     });
-    
-    // Handle image preview
-    $('#upic').change(function() {
-        var file = this.files[0];
-        if (file) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                $('#upload-preview img').attr('src', e.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-    
-    // Add keyboard navigation for change password
-    $('#change-password').keypress(function(e) {
-        if (e.which === 13) { // Enter key
-            window.location.href = 'change_pass.php';
-        }
-    });
-});
+
+    function updateSidebarProfile() {
+        // Update sidebar profile image
+        var newImageSrc = '<?= $profilePicUrl ?>';
+        var newName = '<?= htmlspecialchars($admin->uname, ENT_QUOTES) ?>';
+        
+        // Update sidebar image
+        $('.admin-pic img').attr('src', newImageSrc);
+        
+        // Update sidebar name
+        $('.admin-name').text(newName);
+        
+        // Force image reload to bypass cache
+        $('.admin-pic img').attr('src', newImageSrc + '?t=' + new Date().getTime());
+    }
 </script>
 
 <?php include "admin_footer.php" ?>
