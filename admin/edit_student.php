@@ -84,7 +84,7 @@ if (isset($_GET['id'])) {
                 $stmt = $_db->prepare("UPDATE student SET studName = ?, studPic = ?, studEmail = ?, studPhone = ?, studAddress = ?, studCity = ?, studState = ? WHERE studid = ?");
                 $stmt->execute([$studName, $newFileName, $studEmail, $studPhone, $studAddress, $studCity, $studState, $id]);
                 if ($stmt->rowCount() < 1) {
-                    sweet_alert_msg("Unable to update details. Please try again.", 'error', null, false);
+                    sweet_alert_msg("Unable to update details. Please try again.", 'error', null, false, true);
                 } else {
                     //save the file
                     if ($newFileName != $student->studPic) {
