@@ -1,5 +1,6 @@
 <?php
 
+use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 
 $_title = "My Profile";
@@ -17,10 +18,6 @@ if (!isset($_SESSION['admin_id'])) {
 
 $_err = []; // Use consistent error array naming
 $profileUpdated = false; // Flag to track if profile was updated
-// AWS S3 Setup (needed before header include for S3 operations)
-require '../vendor/autoload.php';
-
-use Aws\S3\S3Client;
 
 if (is_post()) {
     // Get form data
@@ -54,7 +51,8 @@ if (is_post()) {
         if ($contactCheck) $_err["umobile"] = $contactCheck;
     }
 
-
+    // AWS S3 Setup (needed before header include for S3 operations)
+    require '../vendor/autoload.php';
 
     $s3Client = new S3Client([
         'version'     => 'latest',
@@ -156,13 +154,22 @@ if (is_post()) {
 
 // Include header AFTER processing the update
 include './admin_header.php';
+// Fetch fresh admin data for form display
+$stmt = $_db->prepare("SELECT * FROM user WHERE uid = ? AND status = '1' AND level = '1'");
+$stmt->execute([$_SESSION['admin_id']]);
+$admin = $stmt->fetch();
+
+if (!$admin) {
+    sweet_alert_msg('Admin not found.', 'error', 'admin_login.php', true);
+    exit;
+}
 
 // Set form values for display
-$uname = $currentAdmin->uname;
-$uemail = $currentAdmin->email;
-$umobile = $currentAdmin->contact;
-$upic = $currentAdmin->proPic;
-$superadmin = $currentAdmin->superadmin;
+$uname = $admin->uname;
+$uemail = $admin->email;
+$umobile = $admin->contact;
+$upic = $admin->proPic;
+$superadmin = $admin->superadmin;
 
 // Generate the S3 URL for the profile picture
 $profilePicUrl = getProfilePicUrl($upic, $bucketName);
@@ -263,7 +270,7 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
                         </div>
                         <?= err('upic') ?>
 
-                        <?php if ($superadmin == 1): ?>
+                        <?php if (isset($superadmin) && $superadmin == 1): ?>
                             <div class="label">
                                 <label for="superadmin">Superadmin</label>
                             </div>
@@ -338,7 +345,7 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
     function updateSidebarProfile() {
         // Update sidebar profile image
         var newImageSrc = '<?= $profilePicUrl ?>';
-        var newName = '<?= htmlspecialchars($currentAdmin->uname, ENT_QUOTES) ?>';
+        var newName = '<?= htmlspecialchars($admin->uname, ENT_QUOTES) ?>';
 
         // Update sidebar image
         $('.admin-pic img').attr('src', newImageSrc);
