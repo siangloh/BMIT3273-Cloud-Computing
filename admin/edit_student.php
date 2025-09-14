@@ -21,16 +21,18 @@ $s3Client = new S3Client([
 // Bucket name in S3
 $bucketName = 'assm-student-web-bucketss';
 
-
 // get method -- check if the url have id
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
 
     if (is_exists($id, 'student', 'studid')) {
-        $err = [];
+        $_err = []; // Use consistent error array naming
+        
         if (is_post()) {
+            // Get current student data
             $student = $_db->query("SELECT * FROM student WHERE studid = '$id'")->fetch();
 
+            // Get form data
             $studName = post("sname") ?? "";
             $studEmail = post("semail") ?? "";
             $studPhone = post("sphone") ?? "";
@@ -38,81 +40,157 @@ if (isset($_GET['id'])) {
             $studCity = post("scity") ?? "";
             $studState = post("sstate") ?? "";
 
-            if ($studName != $student->studName) $_err["sname"] = checkUsername($studName) ?? '';
-            if ($studEmail != $student->studEmail) $_err["semail"] = checkRegisterEmail($studEmail) ?? '';
-            if ($studPhone != $student->studPhone)  $_err["sphone"] = checkContact($studPhone) ?? '';
-            if ($studAddress != $student->studAddress)  $_err["saddress"] = checkAddress($studAddress) ?? '';
-            if ($studCity != $student->studCity)  $_err["scity"] = checkCity($studCity) ?? '';
-            if ($studState != $student->studState)  $_err["sstate"] = checkState($studState) ?? '';
+            // Validate only changed fields
+            if ($studName != $student->studName) {
+                $nameCheck = checkUsername($studName);
+                if ($nameCheck) $_err["sname"] = $nameCheck;
+            }
+            
+            if ($studEmail != $student->studEmail) {
+                $emailCheck = checkRegisterEmail($studEmail);
+                if ($emailCheck) $_err["semail"] = $emailCheck;
+            }
+            
+            if ($studPhone != $student->studPhone) {
+                $phoneCheck = checkContact($studPhone);
+                if ($phoneCheck) $_err["sphone"] = $phoneCheck;
+            }
+            
+            if ($studAddress != $student->studAddress) {
+                $addressCheck = checkAddress($studAddress);
+                if ($addressCheck) $_err["saddress"] = $addressCheck;
+            }
+            
+            if ($studCity != $student->studCity) {
+                $cityCheck = checkCity($studCity);
+                if ($cityCheck) $_err["scity"] = $cityCheck;
+            }
+            
+            if ($studState != $student->studState) {
+                $stateCheck = checkState($studState);
+                if ($stateCheck) $_err["sstate"] = $stateCheck;
+            }
 
-
-            // If new profile picture is uploaded
-            if (isset($_FILES['spic'])) {
+            // Handle profile picture upload
+            $newFileName = $student->studPic; // Default to current image
+            $imageUpdated = false;
+            
+            if (isset($_FILES['spic']) && $_FILES['spic']['error'] === UPLOAD_ERR_OK) {
                 $file = $_FILES['spic'];
-                $_err["spic"] = checkUploadPic($file);
-
-                if (empty($_err["spic"])) {
-                    // create a unique id and use it as the new file name
+                $uploadCheck = checkUploadPic($file);
+                
+                if ($uploadCheck) {
+                    $_err["spic"] = $uploadCheck;
+                } else {
+                    // Generate unique filename
                     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                     $newFileName = uniqid() . '.' . $ext;
 
-                    // Upload the new file to S3
                     try {
+                        // Upload new file to S3
                         $result = $s3Client->upload(
-                            $bucketName,  // S3 bucket name
-                            'user-images/' . $newFileName,  // S3 folder path
-                            fopen($file['tmp_name'], 'rb') // File resource
+                            $bucketName,
+                            'user-images/' . $newFileName,
+                            fopen($file['tmp_name'], 'rb')
                         );
 
-                        // Get the URL of the uploaded file
-                        $fileUrl = $result['ObjectURL'];  // Public URL
+                        $imageUpdated = true;
+                        
+                        // Delete old image from S3 if it exists and is not the default profile image
+                        if ($student->studPic && 
+                            $student->studPic !== 'profile.png' && 
+                            $student->studPic !== $newFileName) {
+                            
+                            try {
+                                $s3Client->deleteObject([
+                                    'Bucket' => $bucketName,
+                                    'Key'    => 'user-images/' . $student->studPic
+                                ]);
+                            } catch (AwsException $e) {
+                                // Log the error but don't fail the update
+                                error_log('Failed to delete old image from S3: ' . $e->getMessage());
+                            }
+                        }
+                        
                     } catch (AwsException $e) {
                         $_err['spic'] = 'Error uploading file to S3: ' . $e->getMessage();
-                        $newFileName = $student->studPic; // Fallback to existing file
+                        $newFileName = $student->studPic; // Revert to existing file
+                        $imageUpdated = false;
                     }
-                } else {
-                    $newFileName = $student->studPic; // Fallback to existing file if no valid upload
                 }
-            } else {
-                $newFileName = $student->studPic; // Keep existing image if no new upload
             }
 
-
+            // Filter out empty errors
             $_err = array_filter($_err);
 
-            // store new student record
+            // Update student record if no errors
             if (empty($_err)) {
-                $stmt = $_db->prepare("UPDATE student SET studName = ?, studPic = ?, studEmail = ?, studPhone = ?, studAddress = ?, studCity = ?, studState = ? WHERE studid = ?");
-                $stmt->execute([$studName, $newFileName, $studEmail, $studPhone, $studAddress, $studCity, $studState, $id]);
-                if ($stmt->rowCount() < 1) {
-                    // Nothing was updated because values were the same
-                    sweet_alert_msg("No changes detected. Record remains the same.", 'info', null, false, true);
-                } else {
-                    //save the file
-                    if ($newFileName != $student->studPic) {
-                        move_uploaded_file($file['tmp_name'], '../profilePic/' . $newFileName);
-                        // delete old pic from file
-                        if ($student->studPic != null) {
-                            unlink("../profilePic/$student->studPic");
+                try {
+                    $stmt = $_db->prepare("
+                        UPDATE student 
+                        SET studName = ?, studPic = ?, studEmail = ?, studPhone = ?, studAddress = ?, studCity = ?, studState = ? 
+                        WHERE studid = ?
+                    ");
+                    
+                    $stmt->execute([
+                        $studName, 
+                        $newFileName, 
+                        $studEmail, 
+                        $studPhone, 
+                        $studAddress, 
+                        $studCity, 
+                        $studState, 
+                        $id
+                    ]);
+                    
+                    if ($stmt->rowCount() < 1 && !$imageUpdated) {
+                        sweet_alert_msg("No changes detected. Record remains the same.", 'info', null, false, true);
+                    } else {
+                        sweet_alert_msg('Record updated successfully', 'success', null, false);
+                    }
+                    
+                } catch (PDOException $e) {
+                    // If database update fails and we uploaded a new image, clean up S3
+                    if ($imageUpdated && $newFileName !== $student->studPic) {
+                        try {
+                            $s3Client->deleteObject([
+                                'Bucket' => $bucketName,
+                                'Key'    => 'user-images/' . $newFileName
+                            ]);
+                        } catch (AwsException $s3e) {
+                            error_log('Failed to cleanup S3 after database error: ' . $s3e->getMessage());
                         }
                     }
-                    sweet_alert_msg('Record update successful', 'success', null, false);
+                    
+                    $_err['general'] = 'Database error occurred. Please try again.';
+                    error_log('Database update error: ' . $e->getMessage());
                 }
             }
         }
     } else {
-        sweet_alert_msg('Student not exist.', 'error', $_SERVER['HTTP_REFERER'], false);
+        sweet_alert_msg('Student does not exist.', 'error', $_SERVER['HTTP_REFERER'], false);
+        exit;
     }
 } else {
     sweet_alert_msg("No student selected.", 'error', $_SERVER['HTTP_REFERER'], false);
+    exit;
 }
 
+// Fetch current student data for display
 $result = $_db->query("SELECT * FROM student WHERE studid = '$id'");
 $s = $result->fetch();
 
-// Generate the S3 URL for the profile picture to fetch the image
-$profilePicUrl = $s->studPic ? "https://assm-student-web-bucketss.s3.amazonaws.com/user-images/{$s->studPic}" : "../profilePic/profile.png";
+if (!$s) {
+    sweet_alert_msg('Student not found.', 'error', $_SERVER['HTTP_REFERER'], false);
+    exit;
+}
 
+// Generate the S3 URL for the profile picture
+$profilePicUrl = $s->studPic && $s->studPic !== 'profile.png' 
+    ? "https://assm-student-web-bucketss.s3.amazonaws.com/user-images/{$s->studPic}" 
+    : "https://assm-student-web-bucketss.s3.amazonaws.com/user-images/profile.png";
+
+// Set form values (will be overridden by POST data if form was submitted)
 $sname = $s->studName;
 $semail = $s->studEmail;
 $sphone = $s->studPhone;
@@ -128,6 +206,10 @@ $sstate = $s->studState;
 
 <form method="post" enctype="multipart/form-data">
     <div class="form-box">
+        <?php if (isset($_err['general'])): ?>
+            <div class="error-message"><?= $_err['general'] ?></div>
+        <?php endif; ?>
+        
         <div class="photo-area">
             <div class="photo">
                 <!-- photo preview -->
@@ -139,41 +221,49 @@ $sstate = $s->studState;
                 <?= err('spic') ?>
             </div>
         </div>
+        
         <div class="data-area">
             <div class="data">
                 <div class="input-field">
-                    <div>Student ID : <?= $s->studid ?></div>
+                    <div>Student ID : <?= htmlspecialchars($s->studid) ?></div>
                 </div>
+                
                 <div class="input-field">
                     <label for="sname" class="required">Full Name</label>
                     <?= html_text('sname', "placeholder='Enter Full Name'") ?>
                     <?= err("sname") ?>
                 </div>
+                
                 <div class="input-field">
                     <label for="semail" class="required">Email Address</label>
                     <?= html_text('semail', "placeholder='Enter Email (e.g. xxxx@xxx.xxx)'") ?>
                     <?= err("semail") ?>
                 </div>
+                
                 <div class="input-field">
                     <label for="sphone" class="required">Mobile</label>
                     <?= html_text('sphone', "placeholder='Enter Mobile Number (e.g. 0123456789)'") ?>
                     <?= err("sphone") ?>
                 </div>
+                
                 <div class="input-field">
                     <label for="saddress" class="required">Address</label>
                     <?= html_text('saddress', "placeholder='Enter Address'") ?>
                     <?= err("saddress") ?>
                 </div>
+                
                 <div class="input-field">
                     <label for="scity" class="required">City</label>
                     <?= html_text('scity', "placeholder='Enter City'") ?>
                     <?= err("scity") ?>
                 </div>
+                
                 <div class="input-field">
                     <label for="sstate" class="required">State</label>
                     <?= html_text('sstate', "placeholder='Enter State'") ?>
                     <?= err("sstate") ?>
                 </div>
+                
                 <!-- submit button -->
                 <div class="submit-button">
                     <input type="submit" class="form-button" value="Save" name="save" id="save" />
@@ -182,4 +272,5 @@ $sstate = $s->studState;
         </div>
     </div>
 </form>
+
 <?php include "admin_footer.php" ?>
