@@ -1,6 +1,7 @@
 <?php
 require 'vendor/autoload.php';
 
+
 use Aws\Sns\SnsClient;
 use Aws\Exception\AwsException;
 

@@ -47,9 +47,9 @@ if (is_post()) {
 
             try {
                 sendMessage($announcement_subject, $announcement_message);
-                sweet_alert_msg('Announcement sent successfully!', 'success', null, false);
+                sweet_alert_msg('Announcement sent successfully!', 'success', null, false, true);
             } catch (Exception $e) {
-                sweet_alert_msg('Failed to send announcement: ' . $e->getMessage(), 'error', null, false);
+                sweet_alert_msg('Failed to send announcement: ' . $e->getMessage(), 'error', null, false, true);
             }
         }
     }
