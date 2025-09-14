@@ -146,14 +146,6 @@ function getProfilePicUrl($picName, $bucketName) {
                         <div class="menu-title" data-get="student_list.php" role="button" tabindex="0">
                             Student List
                         </div>
-                        
-                        <!-- Additional menu items (currently commented out) -->
-                        <!--
-                        <div class="menu-title" data-get="categoryList.php" role="button" tabindex="0">Category</div>
-                        <div class="menu-title" data-get="productList.php" role="button" tabindex="0">Product</div>
-                        <div class="menu-title" data-get="optionList.php" role="button" tabindex="0">Options</div>
-                        <div class="menu-title" data-get="order_record.php" role="button" tabindex="0">Order</div>
-                        -->
                     </div>
                 </div>
             </div>
