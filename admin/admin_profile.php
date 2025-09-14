@@ -17,6 +17,10 @@ if (!isset($_SESSION['admin_id'])) {
 
 $_err = []; // Use consistent error array naming
 $profileUpdated = false; // Flag to track if profile was updated
+// AWS S3 Setup (needed before header include for S3 operations)
+require '../vendor/autoload.php';
+
+use Aws\S3\S3Client;
 
 if (is_post()) {
     // Get form data
@@ -50,9 +54,7 @@ if (is_post()) {
         if ($contactCheck) $_err["umobile"] = $contactCheck;
     }
 
-    // AWS S3 Setup (needed before header include for S3 operations)
-    require '../vendor/autoload.php';
-    use Aws\S3\S3Client;
+
 
     $s3Client = new S3Client([
         'version'     => 'latest',
@@ -124,11 +126,11 @@ if (is_post()) {
 
             if ($stmt->rowCount() > 0 || $imageUpdated) {
                 $profileUpdated = true;
-                
+
                 // Update session with new data for immediate reflection
                 $_SESSION['admin_name'] = $uname;
                 $_SESSION['admin_pic'] = $newFileName;
-                
+
                 sweet_alert_msg('Profile updated successfully', 'success', null, false);
             } else {
                 sweet_alert_msg("No changes detected. Record remains the same.", 'info', null, false, true);
@@ -156,11 +158,11 @@ if (is_post()) {
 include './admin_header.php';
 
 // Set form values for display
-$uname = $admin->uname;
-$uemail = $admin->email;
-$umobile = $admin->contact;
-$upic = $admin->proPic;
-$superadmin = $admin->superadmin;
+$uname = $currentAdmin->uname;
+$uemail = $currentAdmin->email;
+$umobile = $currentAdmin->contact;
+$upic = $currentAdmin->proPic;
+$superadmin = $currentAdmin->superadmin;
 
 // Generate the S3 URL for the profile picture
 $profilePicUrl = getProfilePicUrl($upic, $bucketName);
@@ -328,22 +330,22 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
         });
 
         <?php if ($profileUpdated): ?>
-        // Update sidebar in real-time after successful profile update
-        updateSidebarProfile();
+            // Update sidebar in real-time after successful profile update
+            updateSidebarProfile();
         <?php endif; ?>
     });
 
     function updateSidebarProfile() {
         // Update sidebar profile image
         var newImageSrc = '<?= $profilePicUrl ?>';
-        var newName = '<?= htmlspecialchars($admin->uname, ENT_QUOTES) ?>';
-        
+        var newName = '<?= htmlspecialchars($currentAdmin->uname, ENT_QUOTES) ?>';
+
         // Update sidebar image
         $('.admin-pic img').attr('src', newImageSrc);
-        
+
         // Update sidebar name
         $('.admin-name').text(newName);
-        
+
         // Force image reload to bypass cache
         $('.admin-pic img').attr('src', newImageSrc + '?t=' + new Date().getTime());
     }
