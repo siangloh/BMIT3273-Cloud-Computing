@@ -144,13 +144,6 @@ function getProfilePicUrl($picName, $bucketName) {
                             Home
                         </div>
                         
-                        <!-- Show admin menu only for superadmin -->
-                        <?php if (isset($admin->superadmin) && $admin->superadmin == 1): ?> 
-                            <div class="menu-title" data-get="admin_list.php" role="button" tabindex="0">
-                                Admin Management
-                            </div>
-                        <?php endif; ?>
-                        
                         <div class="menu-title" data-get="student_list.php" role="button" tabindex="0">
                             Student List
                         </div>
