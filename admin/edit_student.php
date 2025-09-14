@@ -7,6 +7,7 @@ checkSuperadmin();
 
 // AWS SDK Setup
 require '../vendor/autoload.php';
+
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Aws\Credentials\CredentialProvider;
@@ -18,7 +19,7 @@ $s3Client = new S3Client([
 ]);
 
 // Bucket name in S3
-$bucketName = 'assm-student-web-bucketss'; 
+$bucketName = 'assm-student-web-bucketss';
 
 
 // get method -- check if the url have id
@@ -84,13 +85,14 @@ if (isset($_GET['id'])) {
                 $stmt = $_db->prepare("UPDATE student SET studName = ?, studPic = ?, studEmail = ?, studPhone = ?, studAddress = ?, studCity = ?, studState = ? WHERE studid = ?");
                 $stmt->execute([$studName, $newFileName, $studEmail, $studPhone, $studAddress, $studCity, $studState, $id]);
                 if ($stmt->rowCount() < 1) {
-                    sweet_alert_msg("Unable to update details. Please try again.", 'error', null, false, true);
+                    // Nothing was updated because values were the same
+                    sweet_alert_msg("No changes detected. Record remains the same.", 'info', null, false, true);
                 } else {
                     //save the file
                     if ($newFileName != $student->studPic) {
                         move_uploaded_file($file['tmp_name'], '../profilePic/' . $newFileName);
                         // delete old pic from file
-                        if($student->studPic != null){
+                        if ($student->studPic != null) {
                             unlink("../profilePic/$student->studPic");
                         }
                     }
@@ -109,7 +111,7 @@ $result = $_db->query("SELECT * FROM student WHERE studid = '$id'");
 $s = $result->fetch();
 
 // Generate the S3 URL for the profile picture to fetch the image
-$profilePicUrl = $s->studPic ? "https://assm-student-web-bucketss.s3.amazonaws.com/user-images/{$s->studPic}" : "../profilePic/profile.png"; 
+$profilePicUrl = $s->studPic ? "https://assm-student-web-bucketss.s3.amazonaws.com/user-images/{$s->studPic}" : "../profilePic/profile.png";
 
 $sname = $s->studName;
 $semail = $s->studEmail;
