@@ -12,17 +12,17 @@ $admin = null;
 // Check admin login
 if (isset($_SESSION['admin_id'])) {
     $admin_id = $_SESSION['admin_id'];
-    
+
     // Use prepared statement for security
     $stmt = $_db->prepare("SELECT * FROM user WHERE uid = ? AND status = '1' AND level = '1'");
     $stmt->execute([$admin_id]);
     $admin = $stmt->fetch();
-    
+
     // Override with session data if profile was recently updated
-    if ($admin && isset($_SESSION['admin_name'])) {
+    if ($admin && !empty($_SESSION['admin_name'])) {
         $admin->uname = $_SESSION['admin_name'];
     }
-    if ($admin && isset($_SESSION['admin_pic'])) {
+    if ($admin && !empty($_SESSION['admin_pic'])) {
         $admin->proPic = $_SESSION['admin_pic'];
     }
 }
@@ -36,6 +36,7 @@ if (empty($admin)) {
 
 // AWS SDK Setup
 require '../vendor/autoload.php';
+
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Aws\Credentials\CredentialProvider;
@@ -50,7 +51,8 @@ $s3Client = new S3Client([
 $bucketName = 'assm-student-web-bucketss';
 
 // Function to get S3 profile picture URL
-function getProfilePicUrl($picName, $bucketName) {
+function getProfilePicUrl($picName, $bucketName)
+{
     if (!empty($picName) && $picName !== 'profile.png') {
         return "https://{$bucketName}.s3.amazonaws.com/user-images/{$picName}";
     }
@@ -60,6 +62,7 @@ function getProfilePicUrl($picName, $bucketName) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -108,46 +111,46 @@ function getProfilePicUrl($picName, $bucketName) {
                         Eastbridge University
                     </p>
                 </div>
-                
+
                 <div class="menu-list">
                     <div class="admin-profile">
                         <div class="profile d-flex-center" data-get="admin_profile.php">
                             <div class="admin-pic pointer-event-none">
-                                <img src="<?= getProfilePicUrl($admin->proPic ?? '', $bucketName) ?>" 
-                                     alt="Admin Profile Picture" 
-                                     class="admin-pic"
-                                     onerror="this.src='https://<?= $bucketName ?>.s3.amazonaws.com/user-images/profile.png'">
+                                <img src="<?= getProfilePicUrl($admin->proPic ?? '', $bucketName) ?>"
+                                    alt="Admin Profile Picture"
+                                    class="admin-pic"
+                                    onerror="this.src='https://<?= $bucketName ?>.s3.amazonaws.com/user-images/profile.png'">
                             </div>
                             <div class="admin-name pointer-event-none">
                                 <?= htmlspecialchars($admin->uname ?? 'Admin') ?>
                             </div>
                         </div>
-                        
-                        <div class="logout" role="button" tabindex="0" 
-                             title="Logout" 
-                             style="cursor: pointer;">
-                            <svg xmlns="http://www.w3.org/2000/svg" 
-                                 width="30" height="30" 
-                                 viewBox="0 0 24 24" 
-                                 fill="none" 
-                                 stroke="#fdfdfd" 
-                                 stroke-width="1.5" 
-                                 stroke-linecap="round" 
-                                 stroke-linejoin="round">
+
+                        <div class="logout" role="button" tabindex="0"
+                            title="Logout"
+                            style="cursor: pointer;">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                width="30" height="30"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#fdfdfd"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
                                 <path d="M10 3H6a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4M16 17l5-5-5-5M19.8 12H9" />
                             </svg>
                         </div>
                     </div>
-                    
+
                     <div class="menu-item">
                         <div class="menu-title" data-get="admin_homepage.php" role="button" tabindex="0">
                             Home
                         </div>
-                        
+
                         <div class="menu-title" data-get="student_list.php" role="button" tabindex="0">
                             Student List
                         </div>
-                        
+
                         <!-- Additional menu items (currently commented out) -->
                         <!--
                         <div class="menu-title" data-get="categoryList.php" role="button" tabindex="0">Category</div>
@@ -159,20 +162,20 @@ function getProfilePicUrl($picName, $bucketName) {
                 </div>
             </div>
         </div>
-        
+
         <div class="top-menu-body-content">
             <div class="top-menu">
                 <div class="top-menu-bar">
                     <div class="page-title">
                         <?= htmlspecialchars($_title ?? "Admin Panel") ?>
                     </div>
-                    
+
                     <!-- Optional: Add breadcrumb or additional top menu items -->
                     <div class="top-menu-actions">
                         <!-- Add any top menu actions here -->
                     </div>
                 </div>
             </div>
-            
+
             <div class="body-content">
                 <!-- Main content will be inserted here -->

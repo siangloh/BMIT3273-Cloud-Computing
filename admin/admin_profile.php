@@ -131,6 +131,7 @@ if (is_post()) {
 
                 sweet_alert_msg('Profile updated successfully', 'success', null, false);
             } else {
+                
                 sweet_alert_msg("No changes detected. Record remains the same.", 'info', null, false, true);
             }
         } catch (PDOException $e) {
