@@ -214,12 +214,20 @@ $profilePicUrl = getProfilePicUrl($upic, $bucketName);
             opacity: 0.7;
         }
 
-        .edit-area.active input {
+        .edit-area.active input:not([type="submit"]) {
+            background: white;
+            color: #373737;
+            border-radius: 10px;
+            padding: 5px 20px;
+        }
+
+        .edit-area.active input[type="submit"] {
             background: #373737;
             color: white;
             border-radius: 10px;
             padding: 5px 20px;
         }
+
 
         .edit-area.active #upload-preview {
             pointer-events: all;
