@@ -24,12 +24,12 @@ if (is_post()) {
             }
         }
     } else {
-        sweet_alert_msg('Invalid action.', 'error', $_SERVER['HTTP_REFERER'], false);
+        sweet_alert_msg('Invalid action.', 'error', $_SERVER['HTTP_REFERER'], false, true);
     }
     
     if ($num > 0) {
-        sweet_alert_msg("$num record(s) has been $action. ", 'success', $_SERVER['HTTP_REFERER'], false);
+        sweet_alert_msg("$num record(s) has been $action. ", 'success', $_SERVER['HTTP_REFERER'], false, true);
     } else {
-        sweet_alert_msg("No changes made. ", 'info', $_SERVER['HTTP_REFERER'], false);
+        sweet_alert_msg("No changes made. ", 'info', $_SERVER['HTTP_REFERER'], false, true);
     }
 }
