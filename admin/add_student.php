@@ -12,6 +12,7 @@ $_err = [];
 
 // AWS SDK Setup
 require '../vendor/autoload.php';
+
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Aws\Credentials\CredentialProvider;
@@ -19,11 +20,11 @@ use Aws\Credentials\CredentialProvider;
 // Initialize S3 client
 $s3Client = new S3Client([
     'version'     => 'latest',
-    'region'      => 'us-east-1', 
+    'region'      => 'us-east-1',
 ]);
 
 // Bucket name in S3
-$bucketName = 'assm-student-web-bucketss';  
+$bucketName = 'assm-student-web-bucketss';
 
 if (is_post()) {
     // get data filled in the form
@@ -70,8 +71,6 @@ if (is_post()) {
                 $_err['spic'] = 'Error uploading file to S3: ' . $e->getMessage();
                 $newFileName = null;
             }
-
-		
         } else {
             $newFileName = null;
         }
@@ -86,9 +85,8 @@ if (is_post()) {
 
         if ($stmt->rowCount() > 0) {
             // success
-            
-            alert_msg('New student record added successfully!', 'student_list.php');
-            exit(); 
+            sweet_alert_msg("New student record added successfully!", 'success', "student_list.php", false);
+            exit();
         } else {
             // fail
             $_err[] = "Unable to insert. Please try again.";
