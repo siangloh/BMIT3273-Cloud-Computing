@@ -43,8 +43,11 @@ if (is_post()) {
     $_err["scity"] = checkCity($scity) ?? '';
     $_err["sstate"] = checkState($sstate) ?? '';
 
-    // file upload
-    if (isset($_FILES['spic'])) {
+    // Initialize filename variable
+    $newFileName = null;
+
+    // file upload - only process if file is actually uploaded
+    if (isset($_FILES['spic']) && $_FILES['spic']['error'] === UPLOAD_ERR_OK && !empty($_FILES['spic']['name'])) {
         $file = $_FILES['spic'];
         $_err["spic"] = checkUploadPic($file);
 
@@ -53,7 +56,7 @@ if (is_post()) {
             // everything okay, save the file
             // create a unique id and use it as file name
             $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $newFileName = isset($_FILES["spic"]) && !empty($_FILES["spic"] && !empty($ext)) ? uniqid() . '.' . $ext : null;
+            $newFileName = uniqid() . '.' . $ext;
 
             // Upload the image to S3
             try {
@@ -71,10 +74,9 @@ if (is_post()) {
                 $_err['spic'] = 'Error uploading file to S3: ' . $e->getMessage();
                 $newFileName = null;
             }
-        } else {
-            $newFileName = null;
         }
     }
+    // If no file was uploaded, $newFileName remains null
 
     $_err = array_filter($_err);
 
@@ -118,7 +120,6 @@ if (is_post()) {
         <h1 class="title text-center">Enter Student Information</h1>
         <div class="main-content">
             <form id="reg" method="post" action="" name="reg" enctype="multipart/form-data">
-
 
                 <div class="input-field">
                     <label for="sname" class="required">Full Name</label>
