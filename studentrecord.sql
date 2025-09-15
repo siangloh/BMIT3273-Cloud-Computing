@@ -105,17 +105,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`uid`, `uname`, `pass`, `email`, `contact`, `proPic`, `status`, `level`, `superadmin`, `remark`) VALUES
-(1, 'Teoh Kai Xin', 'e6a0a4ddc6257dad5a6160cbed5371b31923fcf6', 'teoh@gmail.com', '0162626262', '68a81ab8b355a.jpg', 1, 1, 1, 'Teoh123@'),
-(2, 'Teoh', '4861ffec59dc9dcafabfdd6ecbde0038119707d1', 'hitem54041@cetnob.com', '0182938493', '66ec16b20143e.png', 1, 0, 0, '9jQ1Ibj5-P2'),
-(3, 'teohmember', '9bc1c0bf7d4f25d2782ca9ee887ca81a5a832292', 'teohmember2@gmail.com', '0123365456', '68a8280b62a9d.png', 1, 0, 0, 'teohMem123!'),
-(4, 'testing', 'c60ed1f0696c2a220aee8c2fb34902285d181640', 'test@gmail.com', '0123654789', '66e90eb0dadb3.png', 1, 1, 0, 'gXJ^WQRx-R9'),
-(5, 'tests', '6ff1c6112f8f0ebe8bb7b3e89a3976e80113ded4', 'tests@gmail.com', '0147896523', '66e92e7867b03.png', 1, 1, 0, 'nyOoZ*LU*H2'),
-(6, 'testrr', 'cad4a9a0c9632b3e34b19ba83e05b40228745523', 'test2rr@gmail.com', '0147896523', NULL, 1, 1, 1, 'z1y$7b!A%U1'),
-(7, 'testrr', '896929858b6e3d465021be4399b3c9f7fdf2eb55', 'test2rr@gmail.com', '0147896523', NULL, 1, 1, 1, 'bYNe8PLx*D9'),
-(8, 'teoh', 'd8d48206af16acbf7824a9cfaa9671e26ab09bbf', 'teohtest@gmail.com', '0147852369', '66e68a36710e4.jpg', 1, 1, 1, 'kAlpV@Rs!X0'),
-(9, 'testqq', 'd3a7b75cad7de1ea48356b42da304a583b86b96e', 'dfsf@fds.fsd', '0192837465', NULL, 0, 1, 0, '!@^dZkR0$A7'),
-(10, 'newcustomer', 'cdd2554d5ce7647fbf0d050bdbbdbba0671f0777', 'newcustomer@gmail.com', '0192849382', NULL, 1, 0, 0, 'ISbhuheu^L4');
-
+(1, 'Teoh Kai Xin', 'e6a0a4ddc6257dad5a6160cbed5371b31923fcf6', 'teoh@gmail.com', '0162626262', '68a81ab8b355a.jpg', 1, 1, 1, 'Teoh123@');
 --
 -- Indexes for dumped tables
 --
